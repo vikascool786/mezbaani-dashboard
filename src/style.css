@@ -1,0 +1,45 @@
+.custom-card {
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.custom-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Table status colors */
+.table-blank {
+  background: #fff;
+}
+
+.table-running {
+  background: #cce5ff;
+}
+
+.table-printed {
+  background: #d4edda;
+}
+
+.table-paid {
+  background: #fff3cd;
+}
+
+/* Legend small box */
+.legend-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+}
+
+.table-blank { background: #fff; }
+.table-running { background: #dbeafe; }   /* light blue */
+.table-printed { background: #d1fae5; }   /* light green */
+.table-paid { background: #fef3c7; }      /* light yellow */
