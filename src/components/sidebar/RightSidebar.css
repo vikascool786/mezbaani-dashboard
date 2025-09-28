@@ -1,0 +1,62 @@
+.right-sidebar-overlay {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;            /* prevent clicks when hidden */
+  z-index: 1059;
+}
+/* backdrop visible */
+.right-sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;            /* allow clicks to close */
+}
+.right-sidebar {
+ position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 550px;                    /* min width requested */
+  max-width: 90%;
+  background: #ffffff;
+  border-left: 1px solid #e6e6e6;
+  box-shadow: -6px 0 30px rgba(0,0,0,0.12);
+  transform: translateX(100%);     /* start off-screen (to the right) */
+  transition: transform 0.32s cubic-bezier(.2,.8,.2,1); /* smooth slide */
+  z-index: 1060;                   /* above overlay */
+  overflow-y: auto;
+  will-change: transform;
+}
+
+/* visible state */
+.right-sidebar.open {
+  transform: translateX(0);
+}
+
+/* header + close button styling */
+.right-sidebar .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #f1f1f1;
+  color: #000;
+}
+.sidebar-header button:hover{
+  background-color: transparent;
+}
+.sidebar-header button .bi{
+  color: #000;
+}
+
+.right-sidebar .sidebar-body {
+  padding: 1rem;
+}
+
+/* responsive tweak: on very small screens make width a bit smaller */
+@media (max-width: 480px) {
+  .right-sidebar {
+    width: 320px;
+  }
+}

@@ -3,15 +3,21 @@ import { Button, Row, Col, Badge, Form } from "react-bootstrap";
 import CustomCard from "../UI/CustomCard";
 import ModalForm from "../UI/ModalForm";
 import { FormField } from "../types/FormField";
-
-type TableStatus = "blank" | "running" | "printed" | "paid";
+import RightSidebar from "./sidebar/RightSidebar";
 
 export const TableView: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const handleReservationSubmit = (values: any) => {
     console.log("Reservation Data:", values);
     // later connect API here
   };
+
+  //open close right sidebar
+  const openRightSidebar = (table: any) => {
+    setIsRightSidebarOpen(true);
+  };
+  const closeRightSidebar = () => setIsRightSidebarOpen(false);
 
   // reservation form fields
   const reservationFields: FormField[] = [
@@ -106,9 +112,18 @@ export const TableView: React.FC = () => {
       {/* Sections */}
       <h5 className="fs-5 fw-semibold mb-3 mt-5">A/C</h5>
       <div className="d-flex gap-4 flex-wrap">
-        <CustomCard bgColor="#B6E2FA" />
-        <CustomCard bgColor="#FBF7A4" />
-        <CustomCard bgColor="#B6E2FA" />
+        <CustomCard
+          bgColor="#B6E2FA"
+          title={`Table 1`}
+          description={`Seats: 10`}
+          onClick={() => openRightSidebar('table a')}
+        />
+        <CustomCard
+          bgColor="#FBF7A4"
+          title={`Table 1`}
+          description={`Seats: 10`}
+          onClick={() => openRightSidebar('table a')}
+        />
       </div>
 
       <ModalForm
@@ -118,6 +133,17 @@ export const TableView: React.FC = () => {
         onSubmit={handleReservationSubmit}
         fields={reservationFields}
       />
+
+      <RightSidebar
+        isOpen={isRightSidebarOpen}
+        onClose={closeRightSidebar}
+        title={`Table 1`}
+      >
+        <p><strong>Seats:</strong> 10</p>
+        <p><strong>Status:</strong> 'active'</p>
+        <button className="btn btn-danger w-100">Edit Details</button>
+      </RightSidebar>
+
     </div>
   );
 };
