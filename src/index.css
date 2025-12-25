@@ -93,3 +93,21 @@ button:hover,
   border-radius: 9px;
   border: 1px solid grey;
 }
+
+.modal-backdrop {
+  z-index: 1040 !important;
+  /* keep backdrop below modal */
+}
+
+.modal {
+  z-index: 2000 !important;
+  /* higher than sidebar */
+}
+
+.modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  /* darker overlay */
+  backdrop-filter: blur(2px);
+  /* optional: adds blur effect */
+  z-index: 1080 !important;
+}

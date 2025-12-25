@@ -7,6 +7,12 @@ import Sidebar from "./components/sidebar/Sidebar";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Orders from "./pages/Orders";
+import Tables from "./pages/Tables";
+import ManageMenus from "./pages/ManageMenus";
+
+// toastyfy styles
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,10 +57,17 @@ export default function App() {
           <Route index element={<TableView />} />
           {/* /orders -> Orders page inside the same layout */}
           <Route path="orders" element={<Orders />} />
+          <Route path="tables" element={<Tables />} />
+          <Route path="menu">
+            <Route path="categories" element={<ManageMenus type="categories" />} />
+            <Route path="items" element={<ManageMenus type="items" />} />
+          </Route>
+
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={2000} />
     </BrowserRouter>
   );
 }

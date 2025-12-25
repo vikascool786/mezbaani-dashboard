@@ -39,17 +39,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                 role="dialog"
                 aria-label={title}
             >
-                <div className="sidebar-header">
-                    <h5 className="mb-0">{title}</h5>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={onClose}
-                        aria-label="Close"
-                    >
-                        <i className="bi bi-x-lg"></i>
-                    </button>
-                </div>
 
                 <div className="sidebar-body">{children}</div>
             </aside>

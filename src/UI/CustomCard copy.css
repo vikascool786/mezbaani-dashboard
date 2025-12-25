@@ -1,0 +1,35 @@
+.custom-card {
+  width: 160px !important;
+  height: 160px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 8px;
+  padding: 10px;
+  color: #fff;
+}
+
+.custom-card-top {
+  /* Optional: add title, image, or leave empty */
+  flex: 1;
+}
+
+.custom-card-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.custom-card-icons .icon {
+  transition: transform 0.2s;
+}
+
+.custom-card-icons .icon:hover {
+  transform: scale(1.2);
+}
+
+.custom-card-top:hover {
+  cursor: pointer;
+}

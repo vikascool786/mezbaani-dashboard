@@ -3,9 +3,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 type HeaderType =
   | string
   | {
-      key: string;
-      label: string;
-    };
+    key: string;
+    label: string;
+  };
 
 interface CustomTableProps {
   headers: HeaderType[];
@@ -115,10 +115,10 @@ const CustomTable: React.FC<CustomTableProps> = ({ headers, data: initialData, i
 
   return (
     <div>
-      <div className="mb-3">
+      <div className="align-content-center d-flex justify-content-end me-auto">
         <input
           type="text"
-          className="form-control"
+          className="form-control w-25"
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -197,7 +197,7 @@ const CustomTable: React.FC<CustomTableProps> = ({ headers, data: initialData, i
       </div>
       {totalPages > 1 && (
         <nav>
-          <ul className="pagination justify-content-center">
+          <ul className="pagination justify-content-end">
             <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
               <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                 Previous

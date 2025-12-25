@@ -1,15 +1,18 @@
 // src/components/Sidebar.tsx
-import React, { useState } from "react";
+import React from "react";
 import { Nav } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
-import "./style.css"; // adjust path if your css file is elsewhere
-
+import { useAuth } from "../../hooks/useAuth"; // adjust path if needed
+import "./style.css";
 
 interface SidebarProps {
   isOpen: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+  const { logout } = useAuth(); // use logout from auth hook
+  const [openMenus, setOpenMenus] = React.useState(false);
+
 
   return (
     <aside className={`sidebar ${isOpen ? "open" : "closed"}`} aria-label="Sidebar">
@@ -30,13 +33,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           <i className="bi bi-basket me-2"></i>
           <span className="link-text">Orders</span>
         </Nav.Link>
+        <Nav.Item>
+          <div
+            className="d-flex align-items-center sidebar-link"
+            style={{ cursor: "pointer" }}
+            onClick={() => setOpenMenus(prev => !prev)}
+          >
+            <i className="bi bi-menu-button me-2"></i>
+            <span className="link-text">Manage Menus</span>
+            <i
+              className={`bi ms-auto ${openMenus ? "bi-chevron-up" : "bi-chevron-down"
+                }`}
+            />
+          </div>
 
-        <Nav.Link href="#" className="d-flex align-items-center sidebar-link">
-          <i className="bi bi-table me-2"></i>
+          {openMenus && (
+            <div className="submenu ps-4 mt-1">
+              <Nav.Link
+                as={NavLink}
+                to="/menu/categories"
+                className="sidebar-sublink"
+              >
+                <i className="bi bi-tags me-2"></i>
+                Menu Categories
+              </Nav.Link>
+
+              <Nav.Link
+                as={NavLink}
+                to="/menu/items"
+                className="sidebar-sublink"
+              >
+                <i className="bi bi-list-ul me-2"></i>
+                Menu Items
+              </Nav.Link>
+            </div>
+          )}
+        </Nav.Item>
+
+        <Nav.Link as={NavLink} to="/staff" className="d-flex align-items-center sidebar-link">
+          <i className="bi bi-people me-2"></i>
+          <span className="link-text">Staff</span>
+        </Nav.Link>
+
+        <Nav.Link as={NavLink} to="/tables" className="d-flex align-items-center sidebar-link">
+          <i className="bi bi-basket me-2"></i>
           <span className="link-text">Tables</span>
         </Nav.Link>
 
-        <Nav.Link href="#" className="d-flex align-items-center sidebar-link">
+        <Nav.Link as={NavLink} to="/reservations" className="d-flex align-items-center sidebar-link">
           <i className="bi bi-calendar2-check me-2"></i>
           <span className="link-text">Reservations</span>
         </Nav.Link>
@@ -44,6 +88,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         <Nav.Link href="#" className="d-flex align-items-center sidebar-link">
           <i className="bi bi-gear me-2"></i>
           <span className="link-text">Settings</span>
+        </Nav.Link>
+
+        {/* Logout button */}
+        <Nav.Link
+          href="#"
+          onClick={logout}
+          className="align-items-center d-flex fixed-bottom fs-6 mt-3 nav-link sidebar-link"
+        >
+          <i className="bi bi-box-arrow-right me-2"></i>
+          <span className="link-text">Logout</span>
         </Nav.Link>
       </Nav>
     </aside>

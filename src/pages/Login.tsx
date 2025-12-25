@@ -1,26 +1,35 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Form, Button, Card } from "react-bootstrap";
+import { useAuth } from "../hooks/useAuth";
 import "./Login.css";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [phone, setPhone] = useState("8888888881");
+  const [password, setPassword] = useState("123456");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username && password) {
-      localStorage.setItem("authToken", "dummy-token");
-      navigate("/", { replace: true });
-    } else {
-      alert("Enter username and password");
+    setError("");
+    if (!phone || !password) {
+      setError("Enter phone and password");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login(phone, password);
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
-      {/* Left branding panel */}
       <div className="login-left d-none d-md-flex flex-column justify-content-center align-items-center text-white">
         <img src="/logo192.png" alt="Company Logo" className="login-logo mb-3" />
         <h2 className="fw-bold">Mezbaani POS</h2>
@@ -28,20 +37,17 @@ const Login: React.FC = () => {
           Manage your restaurant with ease and efficiency.
         </p>
       </div>
-
-      {/* Right login form */}
       <div className="login-right d-flex justify-content-center align-items-center">
         <Card className="p-4 shadow login-card">
-          <h4 className="text-center mb-4">Admin Login</h4>
+          <h4 className="text-center mb-4">Login</h4>
           <Form onSubmit={handleLogin}>
             <Form.Group className="mb-3">
-              <Form.Label>Username</Form.Label>
+              <Form.Label>Phone</Form.Label>
               <Form.Control
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter phone"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -51,16 +57,13 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                required
               />
             </Form.Group>
-            <Button type="submit" variant="danger" className="w-100">
-              Login
+            {error && <div className="text-danger mb-3">{error}</div>}
+            <Button type="submit" variant="danger" className="w-100" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </Form>
-          <div className="text-center mt-3 small text-muted">
-            © {new Date().getFullYear()} Mezbaani. All rights reserved.
-          </div>
         </Card>
       </div>
     </div>
