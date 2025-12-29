@@ -1,13 +1,23 @@
 import React from "react";
 import "./css/orderItems.css";
-import { OrderItem } from "../../types/Order";
+import { Order, OrderItem } from "../../types/Order";
 
 interface Props {
   items: OrderItem[];
+  orderDetails?: any;
   draftItems?: boolean;
+  // onServeItem?: (orderId: string, itemId: string, qty?: number) => void;
+  // onCancelItem?: (orderId: string, itemId: string, qty?: number) => void;
+  onItemAction?: (
+    orderId: string,
+    itemId: string,
+    action: "served" | "cancelled",
+    qty?: number
+  ) => void;
 }
 
-const OrderItems: React.FC<Props> = ({ items, draftItems }) => {
+const OrderItems: React.FC<Props> = ({ items, orderDetails, draftItems, onItemAction }) => {
+
   if (!items.length) {
     return (
       <div className="drawer-section">
@@ -34,28 +44,57 @@ const OrderItems: React.FC<Props> = ({ items, draftItems }) => {
               <div>
                 <div className="item-name">{item.name}</div>
 
-                <div className="item-status-chips">
-                  {served > 0 && !draftItems && (
-                    <span className="chip chip-served">
-                      Served {served > 1 && `(${served})`}
-                    </span>
+                <div className="item-status-actions">
+                  {/* 🟡 COOKING */}
+                  {!draftItems && (
+                    <button
+                      className="chip chip-cooking"
+                      disabled={cooking <= 0}
+                    >
+                      Cooking ({cooking})
+                    </button>
                   )}
 
-                  {cooking > 0 && !draftItems && (
+                  {/* 🟢 SERVE */}
+                  {!draftItems && (
+                    <button
+                      className="chip chip-served clickable"
+                      disabled={cooking <= 0}
+                      onClick={() =>
+                        onItemAction?.(
+                          orderDetails!.id,
+                          item.menuItemId,
+                          "served",
+                          1
+                        )
+                      }
+                    >
+                      Serve ({served})
+                    </button>
+                  )}
+
+                  {/* 🔴 CANCEL */}
+                  {!draftItems && (
+                    <button
+                      className="chip chip-cancelled clickable"
+                      disabled={cooking <= 0}
+                      onClick={() =>
+                        onItemAction?.(
+                          orderDetails!.id,
+                          item.menuItemId,
+                          "cancelled",
+                          1
+                        )
+                      }
+                    >
+                      Cancel ({cancelled})
+                    </button>
+                  )}
+
+                  {/* 🟡 DRAFT MODE */}
+                  {draftItems && (
                     <span className="chip chip-cooking">
-                      Cooking {cooking > 1 && `(${cooking})`}
-                    </span>
-                  )}
-
-                  {cancelled > 0 && !draftItems && (
-                    <span className="chip chip-cancelled">
-                      Cancelled {cancelled > 1 && `(${cancelled})`}
-                    </span>
-                  )}
-
-                  {cooking > 0 && draftItems && (
-                    <span className="chip chip-cooking">
-                      Ready to KOT {cooking > 1 && `(${cooking})`}
+                      Ready to KOT ({total})
                     </span>
                   )}
                 </div>

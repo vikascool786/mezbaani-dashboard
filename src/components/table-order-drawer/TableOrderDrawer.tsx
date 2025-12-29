@@ -9,6 +9,7 @@ import "./css/TableOrderDrawer.css";
 import { MenuItem } from "../../types/MenuItem";
 import MenuPanel from "../Table/MenuPanel";
 import PaymentPanel from "../Table/PaymentPanel";
+import OrderItemsSkeleton from "../../UI/skeleton/OrderItemsSkeleton";
 
 interface Props {
     table: any | null;
@@ -174,6 +175,7 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
             return [
                 ...prev,
                 {
+                    orderId: "DRAFT",
                     menuItemId: menuItem.id,
                     name: menuItem.name,
                     price: menuItem.price,
@@ -302,7 +304,6 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
         }
     };
 
-
     const onTransfer = () => {
         //   openTransferModal(order.id, table.id);
     };
@@ -310,6 +311,20 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
         //   openTransferModal(order.id, table.id);
     };
 
+    //refresh order once update on served or cancelled
+    const refreshOrder = async () => {
+        if (!table?.id) return;
+
+        const data: Order = await apiCall(
+            `${baseUrl}/orders/table/${table.id}`
+        );
+
+        setOrder(data);
+        setExistingItems(data.items || []);
+    };
+
+
+    // fetch order details on drawer open
     useEffect(() => {
         if (!isOpen || !table?.id) return;
 
@@ -322,8 +337,8 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                 setOrder(data);
                 setOrder(data);
                 setExistingItems(data.items || []);
-                setDraftItems([]); // 🔥 reset when drawer opens
-                setSearchTerm(""); // 🔥 reset input field
+                setDraftItems([]); // reset when drawer opens
+                setSearchTerm(""); // reset input field
             } catch (err) {
                 console.error("Failed to fetch order", err);
             } finally {
@@ -333,6 +348,31 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
 
         fetchOrder();
     }, [isOpen, table?.id]);
+
+
+    // order ITem component events
+    const handleOrderItemAction = async (orderId: string, itemId: string, action: "served" | "cancelled", qty = 1) => {
+        if (!orderId && !itemId) return;
+        try {
+            const payload = {
+                [action === "served" ? "quantityServed" : "quantityCancelled"]: qty
+            };
+
+            setLoading(true);
+            await apiCall(`${baseUrl}/order-items/status/${orderId}/${itemId}`, {
+                method: "PUT",
+                body: JSON.stringify(payload),
+            });
+
+            //refresh order
+            await refreshOrder();
+
+        } catch (err) {
+            console.error("Failed to fetch order", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!isOpen) setOrder(null);
@@ -425,7 +465,8 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                             {existingItems.length > 0 && (
                                 <>
                                     <div className="order-section-title">Already Sent to KOT</div>
-                                    <OrderItems items={existingItems} />
+                                    {loading && <OrderItemsSkeleton rows={3} />}
+                                    {!loading && <OrderItems items={existingItems} orderDetails={order} onItemAction={handleOrderItemAction} />}
                                 </>
                             )}
 
@@ -435,7 +476,8 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                                         New Items
                                         <span className="badge bg-warning text-dark ms-2">Pending</span>
                                     </div>
-                                    <OrderItems items={draftItems} draftItems={true} />
+                                    {loading && <OrderItemsSkeleton rows={3} />}
+                                    {!loading && <OrderItems items={draftItems} draftItems={true} />}
                                 </>
                             )}
 

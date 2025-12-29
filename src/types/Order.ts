@@ -2,6 +2,7 @@ import { Table } from "./Table";
 import { User } from "./User";
 
 export interface OrderItem {
+  orderId: string;
   menuItemId: string;
   name: string;
   price: number;

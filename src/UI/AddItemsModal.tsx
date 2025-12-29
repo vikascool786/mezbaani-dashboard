@@ -2,15 +2,16 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Modal, Button, Form, Spinner } from "react-bootstrap";
 import { useApi } from "../hooks/useApi";
+import { MenuItem } from "../types/MenuItem";
 
-export interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl?: string;
-  isAvailable?: boolean;
-  MenuCategory?: { name: string };
-}
+// export interface MenuItem {
+//   id: string;
+//   name: string;
+//   price: number;
+//   imageUrl?: string;
+//   isAvailable?: boolean;
+//   MenuCategory?: { name: string };
+// }
 
 interface AddItemsModalProps {
   show: boolean;
@@ -84,7 +85,7 @@ const AddItemsModal: React.FC<AddItemsModalProps> = ({
       top
     >
       <Modal.Header closeButton>
-        <Modal.Title>Add Items</Modal.Title>
+        <Modal.Title>Add Items 2</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>

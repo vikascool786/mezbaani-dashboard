@@ -7,25 +7,11 @@ import RightSidebar from "./sidebar/RightSidebar";
 import { useApi } from "../hooks/useApi";
 import { Table, TableResponse } from "../types/Table";
 import { groupTablesBySection } from "../utils/groupTablesBySection";
-import AddItemsModal, { MenuItem } from "../UI/AddItemsModal";
+import AddItemsModal from "../UI/AddItemsModal";
 import { RestaurantResponse } from "../types/Restaurant";
 import DropdownSelect from "./common/DropdownSelect";
 import TableOrderDrawer from "./table-order-drawer/TableOrderDrawer";
 
-const mockOrder = {
-  server: "Priya K.",
-  startedAt: "1h 12m ago",
-  elapsed: "1h 12m",
-  runningAmount: 2100,
-  status: "DINING",
-  items: [],
-  bill: {
-    subtotal: 1660,
-    gst: 83,
-    serviceCharge: 166,
-    total: 1909,
-  },
-};
 export const TableView: React.FC = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const { apiCall } = useApi();

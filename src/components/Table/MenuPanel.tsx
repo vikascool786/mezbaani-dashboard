@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MenuItem } from "../../types/MenuItem";
+import MenuItemsSkeleton from "../../UI/skeleton/MenuItemsSkeleton";
 
 interface Props {
     isOpen: boolean;
@@ -30,15 +31,6 @@ const MenuPanel: React.FC<Props> = ({
     searchTerm,
     setSearchTerm
 }) => {
-    // const filteredItems = useMemo(() => {
-    //     return menuItems.filter(
-    //         item =>
-    //             item.categoryId === activeCategoryId &&
-    //             item.isActive &&
-    //             item.isAvailable
-    //     );
-    // }, [menuItems, activeCategoryId]);
-    console.log(menuItems);
     if (!isOpen) return null;
 
     return (
@@ -87,7 +79,7 @@ const MenuPanel: React.FC<Props> = ({
 
                 {/* MENU ITEMS */}
                 <div className="menu-items">
-                    {loading && <p style={{ fontSize: 12 }}>Loading...</p>}
+                    {loading && <MenuItemsSkeleton rows={6} />}
 
                     {menuItems.map(item => {
                         const qty = getDraftQty(item.id);
@@ -110,24 +102,6 @@ const MenuPanel: React.FC<Props> = ({
                                     </div>
                                 </div>
 
-                                {/* <div className="menu-item-action">
-                                    <div className="price">₹{item.price}</div>
-
-                                    {qty === 0 ? (
-                                        <button
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => onAddItem(item)}
-                                        >
-                                            + Add
-                                        </button>
-                                    ) : (
-                                        <div className="qty-box">
-                                            <button onClick={() => onRemoveItem(item.id)}>-</button>
-                                            <span>{qty}</span>
-                                            <button onClick={() => onAddItem(item)}>+</button>
-                                        </div>
-                                    )}
-                                </div> */}
                                 <div className="atc__menu-item-action">
                                     <div className="atc__price">₹{item.price}</div>
 

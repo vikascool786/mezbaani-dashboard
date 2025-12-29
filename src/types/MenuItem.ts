@@ -3,21 +3,33 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  foodType: "veg" | "non-veg";
+  foodType: FoodType;
+  imageUrl: string;
   isAvailable: boolean;
   isActive: boolean;
   sortOrder: number;
-  categoryId: string;
-  restaurantId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: Date; // ISO date string
+  updatedAt?: Date; // ISO date string
+  restaurantId?: string;
+  categoryId?: string;
+  MenuCategory?: MenuCategory;
 }
 
+export type FoodType = "veg" | "non-veg";
+
+export interface MenuCategory {
+  id: string;
+  name: string;
+  isActive: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+  restaurantId?: string;
+}
 export interface MenuItemCategory {
   id: string;
   name: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  restaurantId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  restaurantId?: string;
 }
