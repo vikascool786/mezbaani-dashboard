@@ -53,12 +53,15 @@ const EntityViewDrawer: React.FC<EntityViewDrawerProps> = ({
                   >
                     <span className="label">{field.label}</span>
                     <span className="value">
-                      {field.status ? (
-                        <StatusChip status={field.status} />
-                      ) : (
-                        field.value
+                      {field.status && <StatusChip status={field.status} />}
+
+                      {!field.status && field.label === "Image" && typeof field.value === "string" && (
+                        <img src={field.value} alt="Image" width={120} height={120}/>
                       )}
+
+                      {!field.status && field.label !== "Image" && field.value}
                     </span>
+
                   </div>
                 ))}
             </div>

@@ -208,10 +208,9 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
 
     const onPrintKot = async () => {
         if (!draftItems.length) return;
-
+        setLoading(true);
         try {
-            setLoading(true);
-
+            const itemsPayload = buildItemsPayload(); 
             let orderId = order?.id;
 
             // CASE 1: VACANT TABLE (NO ORDER)
@@ -220,7 +219,7 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                     method: "POST",
                     body: JSON.stringify({
                         tableId: table.id,
-                        items: buildItemsPayload(),
+                        items: itemsPayload,
                     }),
                 });
 
@@ -234,7 +233,7 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                     method: "PUT",
                     body: JSON.stringify({
                         tableId: table.id,
-                        items: buildItemsPayload(),
+                        items: itemsPayload,
                     }),
                 });
             }
@@ -243,7 +242,7 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
             await apiCall(`${baseUrl}/orders/${orderId}/kot`, {
                 method: "PUT",
                 body: JSON.stringify({
-                    items: buildItemsPayload(),
+                    items: itemsPayload,
                 }),
             });
 
@@ -443,11 +442,6 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
                     <div className="drawer-content p-0">
                         <div className="border-bottom section-title">ORDER HISTORY</div>
                         <div className="drawer-items p-3">
-                            {loading && (
-                                <div className="text-muted text-center mt-4">
-                                    Checking table status…
-                                </div>
-                            )}
 
                             {!loading && !order && draftItems.length == 0 && (
                                 <div className="vacant-table-state text-center mt-5">
