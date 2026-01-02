@@ -1,11 +1,25 @@
+/**
+ * TableView.tsx
+ *
+ * This screen shows live table status for a selected restaurant.
+ * It works in BOTH:
+ *  - Web (API → UI)
+ *  - Electron (API → SQLite → UI)
+ *
+ * Key Responsibilities:
+ * 1. Bootstrap restaurants after login
+ * 2. Sync data (Electron only)
+ * 3. Load dashboard tables for selected restaurant
+ * 4. Render table grid & handle interactions
+ */
 import React, { useEffect, useState } from "react";
-import { Button, Row, Col, Badge, Form, Dropdown } from "react-bootstrap";
+import { Button, Badge } from "react-bootstrap";
 import CustomCard from "../UI/CustomCard";
 import ModalForm from "../UI/ModalForm";
 import { FormField } from "../types/FormField";
 import RightSidebar from "./sidebar/RightSidebar";
 import { useApi } from "../hooks/useApi";
-import { Table, TableResponse } from "../types/Table";
+import { Table } from "../types/Table";
 import { groupTablesBySection } from "../utils/groupTablesBySection";
 import AddItemsModal from "../UI/AddItemsModal";
 import { RestaurantResponse } from "../types/Restaurant";
@@ -13,78 +27,47 @@ import DropdownSelect from "./common/DropdownSelect";
 import TableOrderDrawer from "./table-order-drawer/TableOrderDrawer";
 import { getRestaurants, syncRestaurants } from "../data/restaurantService";
 import { getDashboardTables, syncTables } from "../data/tableService";
-import { syncUsers } from "../data/userService";
 import { syncRoles } from "../data/roleService";
 import { syncDashboardTables } from "../data/dashboardTableService";
 
 
 export const TableView: React.FC = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  /**
+   * Auth
+   * token comes from:
+   * - Web → normal auth flow
+   * - Electron → SQLite session
+   */
   const { apiCall, token } = useApi();
-  const [tables, setTables] = useState<Table[]>([]);
 
+  /**
+   * UI State
+   */
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Restaurant State
+   */
   const [restaurant, setRestaurant] = useState<RestaurantResponse>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
 
+  /**
+   * Table State
+   */
+  const [tables, setTables] = useState<Table[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
-  const [showModal, setShowModal] = useState(false);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  /**
+   * UI Modals & Drawers
+   */
+  const [showReservationModal, setShowReservationModal] = useState(false);
   const [showAddItemsModal, setShowAddItemsModal] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
-  const handleReservationSubmit = (values: any) => {
-    console.log("Reservation Data:", values);
-
-    // later connect API here
-  };
-
-  //open close right sidebar
-  const openRightSidebar = (table: any) => {
-    setSelectedTable(table);
-    setIsRightSidebarOpen(true);
-    if (table.isOccupied) {
-      // fetch and set order details for occupied table
-    }
-    if (!table.isOccupied) {
-      // prepare form for new reservation
-    }
-  };
-  const closeRightSidebar = () => setIsRightSidebarOpen(false);
-
-  // ✅ Handle add items confirm
-  const handleConfirmItems = (selected: { [key: string]: number }) => {
-    setShowAddItemsModal(false);
-    // later update order state / API call
-  };
-
-  // reservation form fields
-  const reservationFields: FormField[] = [
-    { name: "guestName", label: "Guest Name", type: "text", required: true },
-    { name: "phone", label: "Phone Number", type: "text", required: true },
-    { name: "guests", label: "No. of Guests", type: "number", required: true },
-    {
-      name: "section",
-      label: "Section",
-      type: "select",
-      options: ["AC Hall", "Non-AC", "Rooftop"],
-      required: true,
-    },
-    {
-      name: "table",
-      label: "Table",
-      type: "select",
-      options: ["T1", "T2", "T3"],
-      required: true,
-    },
-    { name: "datetime", label: "Date & Time", type: "datetime", required: true },
-    { name: "notes", label: "Notes", type: "textarea" },
-  ];
-
-  //fetching RestaurantResponse list
+  // BOOTSTRAP RESTAURANTS (AFTER LOGIN)
   useEffect(() => {
     if (!token) return;
     const fetchRestaurants = async () => {
@@ -96,7 +79,6 @@ export const TableView: React.FC = () => {
           if (!token) {
             throw new Error("Auth token missing");
           }
-          console.log(token)
           await syncRoles(token);
           await syncRestaurants();
           await syncTables();
@@ -124,7 +106,7 @@ export const TableView: React.FC = () => {
     fetchRestaurants();
   }, [token]);
 
-
+  // LOAD DASHBOARD TABLES (WHEN RESTAURANT CHANGES)
   useEffect(() => {
     if (!selectedRestaurantId) return;
 
@@ -142,27 +124,69 @@ export const TableView: React.FC = () => {
     loadDashboard();
   }, [selectedRestaurantId]);
 
-
-
+  // UI HELPERS
   const restaurantOptions = restaurant.map((r) => ({
     label: r.name,
     value: r.id,
   }));
+  const tablesBySection = groupTablesBySection(tables); // Group tables by section
+  const sortedSections = Object.keys(tablesBySection).sort((a, b) => a.localeCompare(b));
 
-  // Group tables by section
-  const tablesBySection = groupTablesBySection(tables);
+  // HANDLERS
+  const openRightSidebar = (table: Table) => {
+    setSelectedTable(table);
+    setIsRightSidebarOpen(true);
+  };
 
-  // ✅ Handle order updated from TableOrderDrawer
-  const handleOrderUpdated = async () => {
+  const closeRightSidebar = () => {
+    setSelectedTable(null);
+    setIsRightSidebarOpen(false);
+  };
+
+  const handleOrderUpdated = async () => { //Handle order updated from TableOrderDrawer
+    if (!selectedRestaurantId) return;
+
     const res = await apiCall(
       `${baseUrl}/dashboard/tables/${selectedRestaurantId}`
     );
     setTables(res.tables);
   };
 
-  // Sort sections alphabetically or numerically
-  const sortedSections = Object.keys(tablesBySection).sort((a, b) => a.localeCompare(b));
+  const handleReservationSubmit = (values: any) => {
+    console.log("Reservation Data:", values);
 
+    // later connect API here
+  };
+
+  // Handle add items confirm
+  const handleConfirmItems = (selected: { [key: string]: number }) => {
+    setShowAddItemsModal(false);
+  };
+
+  // reservation form fields
+  const reservationFields: FormField[] = [
+    { name: "guestName", label: "Guest Name", type: "text", required: true },
+    { name: "phone", label: "Phone Number", type: "text", required: true },
+    { name: "guests", label: "No. of Guests", type: "number", required: true },
+    {
+      name: "section",
+      label: "Section",
+      type: "select",
+      options: ["AC Hall", "Non-AC", "Rooftop"],
+      required: true,
+    },
+    {
+      name: "table",
+      label: "Table",
+      type: "select",
+      options: ["T1", "T2", "T3"],
+      required: true,
+    },
+    { name: "datetime", label: "Date & Time", type: "datetime", required: true },
+    { name: "notes", label: "Notes", type: "textarea" },
+  ];
+
+  // RENDER
   if (loading) return <div>Loading tables...</div>;
   if (error) return <div className="text-danger">Error Loading tables...</div>;
 
@@ -186,7 +210,7 @@ export const TableView: React.FC = () => {
             }}
           />
 
-          <Button variant="danger" onClick={() => setShowModal(true)}>+ Table Reservation</Button>
+          <Button variant="danger" onClick={() => setShowReservationModal(true)}>+ Table Reservation</Button>
           <Button variant="danger">Delivery</Button>
           <Button variant="danger">Take Away</Button>
           <Button variant="danger">+ Contactless</Button>
@@ -264,38 +288,14 @@ export const TableView: React.FC = () => {
 
               />
             ))}
-            {/* <CustomCard
-              key={2}
-              status={"RESERVED"}
-              tableName={`T3`}
-              seats={`5`}
-              duration="24 min"
-              customerName="John Doe"
-              amount={1500}
-              reservationTime="7:30 PM"
-              onClick={() => openRightSidebar('2')}
-
-            />
-            <CustomCard
-              key={2}
-              status={"BILLED"}
-              tableName={`T4`}
-              seats={`5`}
-              duration="24 min"
-              customerName="John Doe"
-              amount={1500}
-              reservationTime=""
-              onClick={() => openRightSidebar('2')}
-
-            /> */}
           </div>
         </div>
       ))}
 
       <ModalForm
         title="Table Reservation"
-        show={showModal}
-        onClose={() => setShowModal(false)}
+        show={showReservationModal}
+        onClose={() => setShowReservationModal(false)}
         onSubmit={handleReservationSubmit}
         fields={reservationFields}
       />
