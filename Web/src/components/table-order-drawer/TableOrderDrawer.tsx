@@ -290,7 +290,6 @@ const TableOrderDrawer: React.FC<Props> = ({ table, isOpen, onClose, onOrderUpda
 
             // print logic goes here 
             const printData = await apiCall(`${baseUrl}/orders/${order.id}/bill`);
-            console.log(printData);
 
             // // 🔁 Refresh table/order state in parent
             // onOrderUpdated?.(table.id);
