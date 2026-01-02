@@ -1,0 +1,58 @@
+.custom-card {
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.custom-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Table status colors */
+.table-blank {
+  background: #fff;
+}
+
+.table-running {
+  background: #ffd6d6;
+  border: 2px solid #e89394 !important;
+}
+
+.table-printed {
+  background: #cce5ff;
+  border: 2px solid #8ac0f0 !important;
+}
+
+.table-paid {
+  background: #fff3cd;
+  border: 2px solid #f1d390 !important;
+}
+
+/* Legend small box */
+.legend-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+}
+
+.table-blank { background: #fff; }
+.table-running { background: #ffd6d6; }   /* light blue */
+.table-printed { background: #cce5ff; }   /* light green */
+.table-paid { background: #fef3c7; }      /* light yellow */
+
+
+.page-title h5{
+  margin: 0;
+}
+.page-title p {
+  margin: 0;
+  font-size: 12px;
+  color: grey;
+}

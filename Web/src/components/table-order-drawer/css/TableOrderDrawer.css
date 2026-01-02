@@ -1,0 +1,394 @@
+.table-order-drawer {
+  background: #fff;
+}
+
+.drawer-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-root.left-menuitem {
+  width: 700px;
+}
+
+.drawer-root.right-orderitem {
+  width: 500px;
+}
+
+/* Drawer header */
+.drawer-header {
+  flex-shrink: 0;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-elapsed {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.header-elapsed-timer {
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 5px 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9aa0a6;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.border-bottom.section-title {
+  padding: 12px 16px;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-size: 1rem;
+  color: black;
+}
+
+.order-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  margin: 8px 0 10px;
+}
+
+.order-section-title.new {
+  color: #d63384;
+}
+
+.guest-type {
+  background: #fff1e6;
+  color: #b54708;
+  border-radius: 20px;
+  padding: 5px 15px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+/* Middle content */
+.drawer-content {
+  flex: 1 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Guest */
+.drawer-guests {
+  flex-shrink: 0;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Scroll area */
+.drawer-items {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Footer */
+.drawer-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Bill */
+.drawer-bill {
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Actions */
+.drawer-actions {
+  padding: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.drawer-items::-webkit-scrollbar {
+  width: 8px;
+}
+
+.drawer-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.drawer-items::-webkit-scrollbar-thumb {
+  background-color: #c4c4c4;
+  border-radius: 8px;
+}
+
+.drawer-items::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0;
+}
+
+.order-items-card {
+  max-height: 100%;
+  overflow-y: scroll;
+}
+
+
+.left-menuitem {
+  flex: 1;
+  min-width: 0;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Menu header */
+.menu-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  background-color: #EEF2FF;
+}
+
+.menu-header h6 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Search */
+.menu-search {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.menu-wrapper-section {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Categories */
+.menu-categories {
+  display: flex;
+  flex-direction: column;
+  width: 180px;
+  overflow: hidden;
+}
+
+.menu-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.category {
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 700;
+  border-left: 4px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6c757d;
+}
+
+.category span {
+  margin-left: 4px;
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.category.active {
+  color: #dc3545;
+  border-left: 4px solid #dc3545;
+  background: #FEF2F2;
+}
+
+/* Menu items list */
+.menu-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px 16px;
+  background: #F9FAFB;
+}
+
+/* Individual item */
+.menu-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.menu-item-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.menu-item-meta {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+/* add to card + - buttons UI  */
+.atc__menu-item-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.atc__price {
+  font-weight: 600;
+  font-size: 14px;
+  color: #222;
+  min-width: 60px;
+}
+
+/* ADD button */
+.atc__add-btn {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid #198754;
+  background: #e9f7ef;
+  color: #198754;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Qty Stepper */
+.atc__qty-stepper {
+  display: flex;
+  align-items: center;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.atc__step-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f8f9fa;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.atc__qty {
+  width: 32px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+
+/* ===============================
+   RIGHT ORDER PANEL
+================================= */
+.order-section-title.new+.drawer-section {
+  background: #FEF2F2;
+}
+
+.right-orderitem {
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Order content scroll */
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* Footer stays fixed at bottom of RIGHT panel */
+.drawer-footer {
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 8px 12px;
+}
+
+
+/* ===============================
+   VEG / NON-VEG ICON
+================================= */
+.menu-item-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.food-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.food-type .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Veg */
+.food-type.veg {
+  border-color: #198754;
+}
+
+.food-type.veg .dot {
+  background-color: #198754;
+}
+
+/* Non-Veg */
+.food-type.non-veg {
+  border-color: #dc3545;
+}
+
+.food-type.non-veg .dot {
+  background-color: #dc3545;
+}
+
+
+
+@media (max-width: 992px) {
+  .right-orderitem {
+    width: 420px;
+    min-width: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-wrapper-main {
+    flex-direction: column;
+  }
+
+  .right-orderitem {
+    width: 100%;
+    min-width: 100%;
+    height: 55vh;
+  }
+
+  .left-menuitem {
+    height: 45vh;
+  }
+}

@@ -1,0 +1,138 @@
+.table-card {
+  position: relative;
+  width: 180px;
+  height: 160px !important;
+  padding: 14px;
+  border-radius: 14px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  background: #fff;
+}
+
+.table-card.vacant {
+  border: 1px solid #e9ecef;
+}
+
+.table-card.occupied {
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+}
+
+.table-card.billed {
+  background: #f1f8ff;
+  border: 1px solid #a5d8ff;
+}
+
+.table-card.reserved {
+  background: #fff9db;
+  border: 1px solid #ffe066;
+}
+
+.status-pill {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-bottom-left-radius: 14px;
+  border-top-right-radius: 6px;
+}
+
+.status-pill.vacant {
+  background: #f1f3f5;
+  color: #868e96;
+}
+
+.status-pill.occupied {
+  background: #e03131;
+  color: white;
+}
+
+.status-pill.billed {
+  background: #1c7ed6;
+  color: white;
+}
+
+.status-pill.reserved {
+  background: #fab005;
+  color: #000;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.table-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.table-seats {
+  font-size: 14px;
+  color: #868e96;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.available-text {
+  color: #adb5bd;
+  font-size: 14px;
+}
+
+.time-chip {
+  width: fit-content;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  background: white;
+  color: #000;
+  padding: 4px 6px;
+  border: 1px solid #f6eeee;
+}
+
+.reservation-time {
+  font-weight: 600;
+  font-size: 12px;
+  color: #c92a2a;
+  padding: 4px 6px;
+}
+
+.time-chip.occupied {
+  background: #ffd6d6;
+  color: #c92a2a;
+}
+
+.time-chip.billed {
+  background: #dbeafe;
+  color: #1c7ed6;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.customer-name {
+  color: #868e96;
+}
+
+.amount {
+  color: #212529;
+}

@@ -1,0 +1,32 @@
+.table-header-drawer,
+.drawer-header {
+  background: #fff;
+}
+
+.table-header-drawer-status-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-header-drawer-status-pill.dining {
+  background: #d94b3a;
+  color: #fff;
+  display: flex;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.table-header-drawer-status-pill .dot {
+  width: 8px;
+  height: 8px;
+  background: #ffcc00;
+  border-radius: 50%;
+  display: block;
+}

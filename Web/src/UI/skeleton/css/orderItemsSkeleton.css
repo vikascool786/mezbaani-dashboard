@@ -1,0 +1,85 @@
+/* Container */
+.skeleton-card {
+  background: transparent;
+}
+
+/* Row layout */
+.skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Left side */
+.skeleton-left {
+  flex: 1;
+}
+
+.skeleton-item-name {
+  width: 160px;
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: #e0e0e0;
+}
+
+/* Action buttons */
+.skeleton-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-chip {
+  width: 70px;
+  height: 22px;
+  border-radius: 12px;
+  background: #e0e0e0;
+}
+
+/* Right side */
+.skeleton-right {
+  text-align: right;
+  min-width: 90px;
+}
+
+.skeleton-multiplier {
+  width: 80px;
+  height: 12px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background: #e0e0e0;
+}
+
+.skeleton-total {
+  width: 60px;
+  height: 14px;
+  border-radius: 4px;
+  background: #e0e0e0;
+}
+
+/* Shimmer animation */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

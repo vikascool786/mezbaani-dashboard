@@ -1,0 +1,83 @@
+.order-items-card {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.order-item-row:not(:last-child) {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #000;
+}
+
+.item-notes {
+  font-size: 12px;
+  color: #9aa0a6;
+  margin-top: 2px;
+}
+
+.item-multiplier {
+  font-size: 12px;
+  color: #9aa0a6;
+}
+
+.item-total {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+
+.item-status-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.item-status-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: none;
+}
+
+.chip.clickable {
+  cursor: pointer;
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+.chip-served {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.chip-cooking {
+  background: #fff4e5;
+  color: #b26a00;
+}
+
+.chip-cancelled {
+  background: #fdecea;
+  color: #b00020;
+}

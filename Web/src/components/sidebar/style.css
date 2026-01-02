@@ -1,0 +1,102 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #d32f2f;
+  /* red theme */
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition: transform 0.3s ease-in-out;
+  /* smooth slide */
+  z-index: 1050;
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+  /* move sidebar off-screen */
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  /* slide sidebar into view */
+}
+
+/* Collapsed Sidebar */
+.sidebar.collapsed {
+  width: 72px;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  color: #fff;
+}
+
+/* Brand text */
+.sidebar .sidebar-brand-text {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.sidebar.collapsed .sidebar-brand-text {
+  display: none;
+}
+
+/* Sidebar Links */
+.sidebar .sidebar-link {
+  color: #fff;
+  padding: 0.6rem;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  transition: background 0.2s ease;
+}
+
+.sidebar .sidebar-link:hover {
+  background: #b02a37;
+  /* Darker red on hover */
+  color: #fff;
+}
+
+/* Icons */
+.sidebar .bi {
+  font-size: 1.2rem;
+}
+
+/* Hide link text when collapsed */
+.sidebar.collapsed .link-text {
+  display: none;
+}
+
+/* Nav spacing */
+.sidebar .nav {
+  margin-top: .75rem;
+}
+
+/* Toggle Button */
+.sidebar-header button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  margin-top: 45px;
+}
+
+.sidebar-header button:hover {
+  color: #000;
+  /* black icon on hover for contrast */
+}
+.sidebar-sublink {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.sidebar-sublink.active {
+  font-weight: 600;
+}
+
+.sidebar-link.nav-link.active {
+    background: #B32121;
+}
+
+.nav-link, .nav-link:focus, .nav-link:hover {
+  color: #fff !important; 
+}

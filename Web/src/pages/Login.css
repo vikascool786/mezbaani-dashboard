@@ -1,0 +1,42 @@
+.login-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left branding panel */
+.login-left {
+  flex: 1;
+  background: linear-gradient(135deg, #b00020, #000000);
+  text-align: center;
+  padding: 2rem;
+}
+
+.login-logo {
+  width: 100px;
+  height: 100px;
+}
+
+/* Right login panel */
+.login-right {
+  flex: 1;
+  background-color: #f8f9fa;
+  padding: 2rem;
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 12px;
+  border: none;
+}
+
+/* Responsive: hide left branding on small screens */
+@media (max-width: 768px) {
+  .login-left {
+    display: none !important;
+  }
+  .login-right {
+    flex: 1 0 100%;
+    padding: 1rem;
+  }
+}
