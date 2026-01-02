@@ -18,15 +18,6 @@ ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
   if (!restaurantId) throw new Error("restaurantId missing");
   const db = getDB();
   const token = getToken();
-
-  // const session = db
-  //   .prepare(`SELECT token FROM auth_session WHERE id = 1`)
-  //   .get();
-
-  // if (!session?.token) {
-  //   throw new Error("Not authenticated");
-  // }
-
   const res = await fetch(
     `${appUrl}/dashboard/tables/${restaurantId}`,
     {
@@ -37,7 +28,6 @@ ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
   );
 
   const { tables } = await res.json();
-
   if (!Array.isArray(tables)) {
     throw new Error("Invalid tables API response");
   }

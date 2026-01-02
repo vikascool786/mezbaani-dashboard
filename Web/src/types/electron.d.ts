@@ -27,6 +27,9 @@ declare global {
       syncTables: () => Promise<{ success: boolean; synced: number }>;
       syncRoles: (token: string) => Promise<any>;
       syncUsers: (token: string) => Promise<any>;
+
+       /* ---------- SYSTEM ---------- */
+      isOnline: () => Promise<boolean>;
     };
   }
 }

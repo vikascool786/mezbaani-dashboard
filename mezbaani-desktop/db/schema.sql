@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS dashboard_tables (
   reservationTime TEXT,          -- ISO string
   updatedAt TEXT,
 
-  FOREIGN KEY (restaurantId) REFERENCES restaurants(id) ON DELETE CASCADE
+  FOREIGN KEY (restaurantId) REFERENCES Restaurants(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_dashboard_tables_restaurant

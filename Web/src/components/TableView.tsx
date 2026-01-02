@@ -29,10 +29,15 @@ import { getRestaurants, syncRestaurants } from "../data/restaurantService";
 import { getDashboardTables, syncTables } from "../data/tableService";
 import { syncRoles } from "../data/roleService";
 import { syncDashboardTables } from "../data/dashboardTableService";
+import { useNetworkStatus } from "../hooks/useNetworkStatus";
 
 
 export const TableView: React.FC = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
+
+  // checking online or not
+  const isOnline = useNetworkStatus();
+
   /**
    * Auth
    * token comes from:
@@ -79,9 +84,12 @@ export const TableView: React.FC = () => {
           if (!token) {
             throw new Error("Auth token missing");
           }
-          await syncRoles(token);
-          await syncRestaurants();
-          await syncTables();
+          if (isOnline) {
+            // when ONLINE
+            await syncRoles(token);
+            await syncRestaurants();
+            await syncTables();
+          }
           const data = await getRestaurants(apiCall);
           setRestaurant(data);
           if (data.length > 0) {
@@ -113,7 +121,9 @@ export const TableView: React.FC = () => {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        await syncDashboardTables(selectedRestaurantId);
+        if (isOnline === true) {
+          await syncDashboardTables(selectedRestaurantId);
+        }
         const data = await getDashboardTables(selectedRestaurantId);
         setTables(data);
       } finally {
@@ -122,7 +132,7 @@ export const TableView: React.FC = () => {
     };
 
     loadDashboard();
-  }, [selectedRestaurantId]);
+  }, [selectedRestaurantId, isOnline]);
 
   // UI HELPERS
   const restaurantOptions = restaurant.map((r) => ({
@@ -203,8 +213,9 @@ export const TableView: React.FC = () => {
             className="bi bi-arrow-repeat fs-2"
             onClick={async () => {
               if (!selectedRestaurantId || !token) return;
-
-              await syncDashboardTables(selectedRestaurantId);
+              if (isOnline) {
+                await syncDashboardTables(selectedRestaurantId);
+              }
               const data = await getDashboardTables(selectedRestaurantId);
               setTables(data);
             }}

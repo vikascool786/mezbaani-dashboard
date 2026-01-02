@@ -62,7 +62,6 @@ export const useAuth = () => {
             password,
           });
 
-          console.log(data)
           setUser(data.user);
           setToken(data.token); // dummy flag
           redirectByRole(data?.user?.roleName);

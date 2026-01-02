@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { initDatabase } = require("./db/db.js");
 const registerIpcHandlers = require("./ipc");
+const { registerNetworkIPC } = require("./ipc/network");
 
 
 function createWindow() {
@@ -10,7 +11,9 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      contextIsolation: true
+      contextIsolation: true,
+      sandbox: false,          // 🔥 REQUIRED
+      nodeIntegration: false   // good practice
     }
   });
 
@@ -39,6 +42,7 @@ app.whenReady().then(() => {
 
     // ✅ Then open UI
     registerIpcHandlers();
+    registerNetworkIPC(ipcMain);
     createWindow();
   } catch (err) {
     console.error("❌ Failed to start app:", err);

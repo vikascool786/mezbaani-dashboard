@@ -102,7 +102,6 @@ const MenuItems: React.FC = () => {
 
 
   const handleAddMenuItem = () => {
-    console.log("tess")
     openDrawer(EMPTY_ITEM, "add");
   };
 

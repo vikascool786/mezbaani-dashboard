@@ -75,7 +75,6 @@ const MenuCategories: React.FC = () => {
 
 
   const handleAddMenuCategory = () => {
-    console.log("tess")
     openDrawer(EMPTY_CATEGORY, "add");
   };
 
