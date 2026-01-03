@@ -53,7 +53,6 @@ const MenuItems: React.FC = () => {
     try {
       // Electron flow
       if (online == true && window.posAPI) {
-        console.log("test")
         if (!token) {
           throw new Error("Auth token missing");
         }
@@ -88,7 +87,6 @@ const MenuItems: React.FC = () => {
     try {
       // Electron flow
       if (online == true && window.posAPI) {
-        console.log("test")
         if (!token) {
           throw new Error("Auth token missing");
         }

@@ -49,7 +49,6 @@ const MenuCategories: React.FC = () => {
     try {
       // Electron flow
       if (online == true && window.posAPI) {
-        console.log("test")
         if (!token) {
           throw new Error("Auth token missing");
         }
@@ -94,7 +93,6 @@ const MenuCategories: React.FC = () => {
 
   /* ---------------- Search ---------------- */
   const filteredMenuCategories = useMemo(() => {
-    console.log(categories)
     if (!Array.isArray(categories)) return [];
     if (!search.trim()) return categories;
 
@@ -105,8 +103,6 @@ const MenuCategories: React.FC = () => {
         t.name.toLowerCase().includes(term)
     );
   }, [categories, search]);
-
-  console.log("filteredMenuCategories", filteredMenuCategories)
   /* ---------------- Handlers ---------------- */
   const openDrawer = (category: MenuCategory, mode: "view" | "edit" | "add") => {
     setSelectedMenuCategory(category);
