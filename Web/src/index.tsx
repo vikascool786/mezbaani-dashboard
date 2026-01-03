@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import { SelectedRestaurantProvider } from './context/SelectedRestaurantContext';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -14,7 +15,9 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <App />
+    <SelectedRestaurantProvider>
+      <App />
+    </SelectedRestaurantProvider>
   </React.StrictMode>
 );
 

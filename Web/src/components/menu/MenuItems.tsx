@@ -76,8 +76,9 @@ const MenuItems: React.FC = () => {
         : data?.categories ?? [];
 
       setCategories(categoriesArray);
-    } catch {
+    } catch (err: any) {
       toast.error("Failed to load menu categories");
+      setError(err.message || "Failed to fetch categories");
     } finally {
       setLoading(false);
     }
@@ -102,8 +103,9 @@ const MenuItems: React.FC = () => {
       // WEB Flow 
       const data = await getMenuItems(apiCall);
       setMenuItems(data);
-    } catch {
+    } catch (err: any) {
       toast.error("Failed to load menu Items");
+      setError(err.message || "Failed to fetch categories");
     } finally {
       setLoading(false);
     }

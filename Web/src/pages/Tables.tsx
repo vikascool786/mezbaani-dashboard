@@ -9,6 +9,7 @@ import TableEditDrawer from "../components/table-list-drawer/TableEditDrawer";
 import TableViewDrawer from "../components/table-list-drawer/TableViewDrawer";
 import { toast } from "react-toastify";
 import OrderActions from "../components/table-order-drawer/OrderActions";
+import { useSelectedRestaurant } from "../context/SelectedRestaurantContext";
 
 
 const EMPTY_TABLE: any = {
@@ -20,6 +21,9 @@ const EMPTY_TABLE: any = {
 };
 
 const Tables: React.FC = () => {
+  //get global restaurant ID from hook + context
+  const { globalRestaurantId } = useSelectedRestaurant();
+
   const [search, setSearch] = useState("");
   const [tables, setTables] = useState<Table[]>([]);
   const [page, setPage] = useState(1);
@@ -32,10 +36,10 @@ const Tables: React.FC = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   /* ---------------- Fetch Tables ---------------- */
-  const fetchTables = async () => {
+  const fetchTables = async (id: string) => {
     try {
       const res = await apiCall(
-        `${baseUrl}/tables/92562176-5ab3-427e-90c4-3b956a28df0f`
+        `${baseUrl}/tables/${id}`
       );
       setTables(res.tables);
     } catch {
@@ -44,9 +48,11 @@ const Tables: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchTables();
+    if(globalRestaurantId){
+      fetchTables(globalRestaurantId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [globalRestaurantId]);
 
 
 
@@ -144,7 +150,9 @@ const Tables: React.FC = () => {
       );
       toast.success("Table Add successfully");
       closeDrawer();
-      fetchTables(); // ✅ SAFE
+      if(globalRestaurantId){
+        fetchTables(globalRestaurantId); // ✅ SAFE
+      }
     } catch (error) {
       toast.error("Failed to add table");
     }

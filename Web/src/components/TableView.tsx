@@ -30,6 +30,7 @@ import { getDashboardTables, syncTables } from "../data/tableService";
 import { syncRoles } from "../data/roleService";
 import { syncDashboardTables } from "../data/dashboardTableService";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
+import { useSelectedRestaurant } from "../context/SelectedRestaurantContext";
 
 
 export const TableView: React.FC = () => {
@@ -37,6 +38,9 @@ export const TableView: React.FC = () => {
 
   // checking online or not
   const isOnline = useNetworkStatus();
+
+  // restaurant hook 
+  const { setGlobalRestaurantId } = useSelectedRestaurant();
 
   /**
    * Auth
@@ -117,6 +121,7 @@ export const TableView: React.FC = () => {
   // LOAD DASHBOARD TABLES (WHEN RESTAURANT CHANGES)
   useEffect(() => {
     if (!selectedRestaurantId) return;
+    setGlobalRestaurantId(selectedRestaurantId);
 
     const loadDashboard = async () => {
       setLoading(true);

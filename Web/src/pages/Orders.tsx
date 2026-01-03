@@ -9,12 +9,23 @@ import { getElapsedTime } from "../utils/time";
 import OrderActions from "../components/table-order-drawer/OrderActions";
 import RightSidebar from "../components/sidebar/RightSidebar";
 import OrderDetailDrawer from "../components/order-drawer/OrderDetailDrawer";
+import { useNetworkStatus } from "../hooks/useNetworkStatus";
+import { getOrders, syncOrders } from "../data/orderService";
+import { toast } from "react-toastify";
 
 const Orders: React.FC = () => {
+  const { apiCall, token } = useApi();
+  const isOnline = useNetworkStatus();
+
+  /**
+   * UI State
+   */
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [search, setSearch] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
-  const { apiCall } = useApi();
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -23,23 +34,49 @@ const Orders: React.FC = () => {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  const fetchOrders = async (online?: boolean) => {
+    setLoading(true);
+    try {
+      // Electron flow
+      if (online == true && window.posAPI) {
+        if (!token) {
+          throw new Error("Auth token missing");
+        }
+        if (isOnline) {
+          // when ONLINE
+          await syncOrders();
+        }
+        const data = await getOrders(apiCall);
+        setOrders(data);
+        return;
+      }
+
+      // WEB Flow 
+      const data = await getOrders(apiCall);
+      setOrders(data);
+    } catch (err: any) {
+      toast.error("Failed to load orders");
+      setError(err.message || "Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!token) return;
+    fetchOrders();
+  }, [token]);
+  useEffect(() => {
+    if (!token) return;
+    fetchOrders(isOnline as boolean);
+  }, [isOnline]);
+
   const handleViewOrder = (orderId: string) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
     setSelectedOrder(order);
     setIsRightSidebarOpen(true);
   };
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const res = await apiCall(
-        `${baseUrl}/orders`
-      );
-      setOrders(res);
-    };
-
-    fetchOrders();
-  }, []);
 
   /* 🔍 Search (local for now) */
   const filteredOrders = useMemo(() => {

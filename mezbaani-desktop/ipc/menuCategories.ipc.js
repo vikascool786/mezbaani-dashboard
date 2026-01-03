@@ -80,10 +80,5 @@ ipcMain.handle("sync:menuCategories", async () => {
 
 ipcMain.handle("db:getMenuCategories", () => {
   const db = getDB();
-  return db
-    .prepare(`
-      SELECT *
-      FROM MenuCategories
-    `)
-    .all();
+  return db.prepare(`SELECT * FROM MenuCategories`).all();
 });

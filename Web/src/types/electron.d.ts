@@ -1,5 +1,6 @@
 import { MenuCategoryResponse } from "./MenuCategory";
 import { MenuItem } from "./MenuItem";
+import { Order } from "./Order";
 
 export { };
 
@@ -22,7 +23,7 @@ declare global {
       getRestaurants: () => Promise<any[]>;
       getDashboardTables: (restaurantId: string) => Promise<any[]>;
       getTables: (restaurantId: string) => Promise<any[]>;
-      getOrders: (restaurantId?: string) => Promise<any[]>;
+      getOrders: () => Promise<Order[]>;
       getMenuCategories: () => Promise<MenuCategoryResponse>;
       getMenuItems: () => Promise<MenuItem[]>;
 
@@ -34,6 +35,7 @@ declare global {
       syncUsers: (token: string) => Promise<any>;
       syncMenuCategories: () => Promise<any>;
       syncMenuItems: () => Promise<any>;
+      syncOrders: () => Promise<any>;
 
        /* ---------- SYSTEM ---------- */
       isOnline: () => Promise<boolean>;

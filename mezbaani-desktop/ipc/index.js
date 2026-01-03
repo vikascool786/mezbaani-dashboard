@@ -7,4 +7,5 @@ module.exports = function registerIpcHandlers() {
   require("./debug.ipc");
   require("./menuItems.ipc");
   require("./menuCategories.ipc");
+  require("./orders.ipc");
 };
