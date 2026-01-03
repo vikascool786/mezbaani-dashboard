@@ -3,13 +3,13 @@ import DataTable from "../../components/common/DataTable/DataTable";
 import { Column } from "../../components/common/DataTable/types";
 import { Button } from "react-bootstrap";
 import { useApi } from "../../hooks/useApi";
-import { Table, TableForm } from "../../types/Table";
 import RightSidebar from "../../components/sidebar/RightSidebar";
 import MenuCategoryEditDrawer from "../../components/menu-category-list-drawer/MenuCategoryEditDrawer";
 import MenuCategoryViewDrawer from "../../components/menu-category-list-drawer/MenuCategoryViewDrawer";
 import { toast } from "react-toastify";
-import OrderActions from "../../components/table-order-drawer/OrderActions";
 import DrawerActions from "../DrawerActions";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { getMenuCategories, syncMenuCategories } from "../../data/menuCategoryService";
 
 interface MenuCategory {
   id: string;
@@ -24,6 +24,15 @@ const EMPTY_CATEGORY: MenuCategory = {
 };
 
 const MenuCategories: React.FC = () => {
+  const { apiCall, token } = useApi();
+  const isOnline = useNetworkStatus();
+
+  /**
+   * UI State
+   */
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [page, setPage] = useState(1);
@@ -32,30 +41,61 @@ const MenuCategories: React.FC = () => {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [selectedMenuCategory, setSelectedMenuCategory] = useState<MenuCategory | null>(null);
 
-  const { apiCall } = useApi();
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   /* ---------------- Fetch Tables ---------------- */
-  const fetchMenuCategories = async () => {
+  const fetchMenuCategories = async (online?: boolean) => {
+    setLoading(true);
     try {
-      const res = await apiCall(
-        `${baseUrl}/menu-categories`
-      );
-      setCategories(res.categories);
-    } catch {
-      toast.error("Failed to load tables");
+      // Electron flow
+      if (online == true && window.posAPI) {
+        console.log("test")
+        if (!token) {
+          throw new Error("Auth token missing");
+        }
+        if (isOnline) {
+          // when ONLINE
+          await syncMenuCategories();
+        }
+        const data = await getMenuCategories(apiCall);
+        const categoriesArray = Array.isArray(data)
+          ? data
+          : data?.categories ?? [];
+
+        setCategories(categoriesArray);
+        return;
+      }
+
+      // WEB Flow 
+      const data = await getMenuCategories(apiCall);
+      const categoriesArray = Array.isArray(data)
+        ? data
+        : data?.categories ?? [];
+
+      setCategories(categoriesArray);
+
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch categories");
+    } finally {
+      setLoading(false);
     }
   };
-
   useEffect(() => {
+    if (!token) return;
     fetchMenuCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token]);
+  useEffect(() => {
+    if (!token) return;
+    fetchMenuCategories(isOnline as boolean);
+  }, [isOnline]);
 
 
 
   /* ---------------- Search ---------------- */
   const filteredMenuCategories = useMemo(() => {
+    console.log(categories)
+    if (!Array.isArray(categories)) return [];
     if (!search.trim()) return categories;
 
     const term = search.toLowerCase();
@@ -66,6 +106,7 @@ const MenuCategories: React.FC = () => {
     );
   }, [categories, search]);
 
+  console.log("filteredMenuCategories", filteredMenuCategories)
   /* ---------------- Handlers ---------------- */
   const openDrawer = (category: MenuCategory, mode: "view" | "edit" | "add") => {
     setSelectedMenuCategory(category);
@@ -163,12 +204,13 @@ const MenuCategories: React.FC = () => {
   }, [search]);
 
   useEffect(() => {
+    if (!filteredMenuCategories?.length) return;
     const totalPages = Math.ceil(filteredMenuCategories.length / 10);
 
     if (page > totalPages && totalPages > 0) {
       setPage(1);
     }
-  }, [filteredMenuCategories.length, page]);
+  }, [filteredMenuCategories, page]);
 
   /* ---------------- Columns ---------------- */
   const columns: Column<MenuCategory>[] = [

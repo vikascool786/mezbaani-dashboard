@@ -9,6 +9,9 @@ import DrawerActions from "../DrawerActions";
 import { MenuItem, MenuItemCategory } from "../../types/MenuItem";
 import MenuItemEditDrawer from "../menu-Item-list-drawer/MenuItemEditDrawer";
 import MenuItemViewDrawer from "../menu-Item-list-drawer/MenuItemViewDrawer";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { getMenuCategories, syncMenuCategories } from "../../data/menuCategoryService";
+import { getMenuItems, syncMenuItems } from "../../data/menuItemService";
 
 const EMPTY_ITEM: MenuItem = {
   id: "",
@@ -24,6 +27,15 @@ const EMPTY_ITEM: MenuItem = {
 };
 
 const MenuItems: React.FC = () => {
+  const { apiCall, token } = useApi();
+  const isOnline = useNetworkStatus();
+
+  /**
+   * UI State
+   */
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState<MenuItemCategory[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -31,39 +43,86 @@ const MenuItems: React.FC = () => {
 
   const [drawerMode, setDrawerMode] = useState<"view" | "edit" | "add" | null>(null);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-  const [selectedMenuCategory, setSelectedMenuCategory] = useState<MenuItemCategory | null>(null);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
 
-  const { apiCall } = useApi();
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
-  /* ---------------- Fetch Tables ---------------- */
-  const fetchMenuCategories = async () => {
+  /* ---------------- Fetch categories and items ---------------- */
+  const fetchMenuCategories = async (online?: boolean) => {
+    setLoading(true);
     try {
-      const res = await apiCall(
-        `${baseUrl}/menu-categories`
-      );
-      setCategories(res.categories);
+      // Electron flow
+      if (online == true && window.posAPI) {
+        console.log("test")
+        if (!token) {
+          throw new Error("Auth token missing");
+        }
+        if (isOnline) {
+          // when ONLINE
+          await syncMenuCategories();
+        }
+        const data = await getMenuCategories(apiCall);
+        const categoriesArray = Array.isArray(data)
+          ? data
+          : data?.categories ?? [];
+
+        setCategories(categoriesArray);
+        return;
+      }
+
+      // WEB Flow 
+      const data = await getMenuCategories(apiCall);
+      const categoriesArray = Array.isArray(data)
+        ? data
+        : data?.categories ?? [];
+
+      setCategories(categoriesArray);
     } catch {
       toast.error("Failed to load menu categories");
+    } finally {
+      setLoading(false);
     }
   };
-  const fetchMenuItems = async () => {
+  const fetchMenuItems = async (online?: boolean) => {
+    setLoading(true);
     try {
-      const res = await apiCall(
-        `${baseUrl}/menu-items`
-      );
-      setMenuItems(res.items);
+      // Electron flow
+      if (online == true && window.posAPI) {
+        console.log("test")
+        if (!token) {
+          throw new Error("Auth token missing");
+        }
+        if (isOnline) {
+          // when ONLINE
+          await syncMenuItems();
+        }
+        const data = await getMenuItems(apiCall);
+        setMenuItems(data);
+        return;
+      }
+
+      // WEB Flow 
+      const data = await getMenuItems(apiCall);
+      setMenuItems(data);
     } catch {
       toast.error("Failed to load menu Items");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!token) return;
     fetchMenuCategories();
     fetchMenuItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token]);
+  useEffect(() => {
+    if (!token) return;
+    fetchMenuCategories(isOnline as boolean);
+    fetchMenuItems(isOnline as boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();

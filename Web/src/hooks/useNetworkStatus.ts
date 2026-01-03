@@ -18,10 +18,10 @@ export function useNetworkStatus() {
         }
 
         // Web fallback
-        // const webStatus = navigator.onLine;
-        const webStatus = await fetch("https://www.google.com", { method: "HEAD" })
+        const webStatus = navigator.onLine;
+        // const webStatus = await fetch("https://www.google.com", { method: "HEAD" })
         console.log("Web network:", webStatus);
-        setOnline(webStatus?.ok as boolean);
+        setOnline(webStatus);
       } catch (err) {
         console.error(" Network check failed", err);
         setOnline(false); // FAIL SAFE

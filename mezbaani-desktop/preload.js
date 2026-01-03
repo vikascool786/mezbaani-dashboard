@@ -15,6 +15,13 @@ contextBridge.exposeInMainWorld("posAPI", {
   login: (credentials) => ipcRenderer.invoke("auth:login", credentials),
   logout: () => ipcRenderer.invoke("auth:logout"),
 
+  //menu categories
+  getMenuCategories: () => ipcRenderer.invoke("db:getMenuCategories"),
+  syncMenuCategories: () => ipcRenderer.invoke("sync:menuCategories"),
+  //menu Items
+  getMenuItems: () => ipcRenderer.invoke("db:getMenuItems"),
+  syncMenuItems: () => ipcRenderer.invoke("sync:menuItems"),
+
   // ✅ NEW: master sync
   syncRoles: (token) => ipcRenderer.invoke("sync:roles", token),
   // syncUsers: (token) => ipcRenderer.invoke("sync:users", token),

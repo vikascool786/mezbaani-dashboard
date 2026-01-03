@@ -5,4 +5,6 @@ module.exports = function registerIpcHandlers() {
   require("./dashboardTables.ipc");
   require("./tables.ipc");
   require("./debug.ipc");
+  require("./menuItems.ipc");
+  require("./menuCategories.ipc");
 };
