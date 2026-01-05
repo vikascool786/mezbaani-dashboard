@@ -107,10 +107,46 @@ ipcMain.handle("sync:menuItems", async () => {
 
 ipcMain.handle("db:getMenuItems", () => {
   const db = getDB();
-  return db
+
+  const rows = db
     .prepare(`
-      SELECT *
-      FROM MenuItems
+      SELECT
+        mi.*,
+        mc.id           AS menuCategory_id,
+        mc.name         AS menuCategory_name,
+        mc.isActive     AS menuCategory_isActive,
+        mc.createdAt    AS menuCategory_createdAt,
+        mc.updatedAt    AS menuCategory_updatedAt,
+        mc.restaurantId AS menuCategory_restaurantId
+      FROM MenuItems mi
+      LEFT JOIN MenuCategories mc
+        ON mc.id = mi.categoryId
     `)
     .all();
+
+  return rows.map((row) => {
+    const {
+      menuCategory_id,
+      menuCategory_name,
+      menuCategory_isActive,
+      menuCategory_createdAt,
+      menuCategory_updatedAt,
+      menuCategory_restaurantId,
+      ...menuItem
+    } = row;
+
+    return {
+      ...menuItem,
+      MenuCategory: menuCategory_id
+        ? {
+            id: menuCategory_id,
+            name: menuCategory_name,
+            isActive: !!menuCategory_isActive,
+            createdAt: menuCategory_createdAt,
+            updatedAt: menuCategory_updatedAt,
+            restaurantId: menuCategory_restaurantId,
+          }
+        : null,
+    };
+  });
 });

@@ -15,6 +15,16 @@ contextBridge.exposeInMainWorld("posAPI", {
   logout: () => ipcRenderer.invoke("auth:logout"),
   //order
   getOrders: () => ipcRenderer.invoke("db:getOrders"),
+  getOrderByTable: (tableId) =>
+    ipcRenderer.invoke("db:getOrderByTable", tableId),
+  createOrder: (payload) =>
+    ipcRenderer.invoke("db:createOrder", payload),
+  updateOrder: (orderId, payload) =>
+    ipcRenderer.invoke("db:updateOrder", orderId, payload),
+  sendToKot: (orderId, items) =>
+    ipcRenderer.invoke("db:sendToKot", orderId, items),
+  closeBill: (orderId, payload) =>
+    ipcRenderer.invoke("db:closeBill", orderId, payload),
   syncOrders: () => ipcRenderer.invoke("sync:orders"),
   //menu categories
   getMenuCategories: () => ipcRenderer.invoke("db:getMenuCategories"),
