@@ -41,7 +41,7 @@ export const useApi = () => {
 
   const client = useMemo(() => {
     return createApiClient({
-      getToken: () => token,
+      getToken: () => token ?? null,
       onUnauthorized: logout,
     });
   }, [token, logout]);

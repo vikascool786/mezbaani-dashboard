@@ -17,14 +17,16 @@ interface AuthResponse {
 
 export const useAuth = () => {
   const navigate = useNavigate();
+  const [authReady, setAuthReady] = useState(false);
 
   const isElectron = () =>
     typeof window !== "undefined" && !!(window as any).posAPI;
 
   // 🔵 WEB ONLY persistence
-  const [token, setToken] = useState<string | null>(() =>
-    isElectron() ? null : localStorage.getItem("authToken")
+  const [token, setToken] = useState<string | null | undefined>(() =>
+    isElectron() ? undefined : localStorage.getItem("authToken")
   );
+
 
   const [user, setUser] = useState<User | null>(() => {
     if (isElectron()) return null;
@@ -110,26 +112,32 @@ export const useAuth = () => {
 
   useEffect(() => {
     const bootstrapElectronAuth = async () => {
-      if (!window.posAPI) return;
+      if (!window.posAPI) {
+        setAuthReady(true); // web
+        return;
+      }
 
       const session = await window.posAPI.getAuthSession();
-      // console.log("⚡ Electron bootstrap auth", session);
-      if (!session) return;
 
-      setToken(session.token);
-      setUser({
-        id: session.userId,
-        phone: session.phone,
-        email: session.email,
-        role: session.roleName,
-        restaurantId: session.restaurantId,
-      });
+      if (session) {
+        setToken(session.token);
+        setUser({
+          id: session.userId,
+          phone: session.phone,
+          email: session.email,
+          role: session.roleName,
+          restaurantId: session.restaurantId,
+        });
+      } else {
+        setToken(null); // ✅ EXPLICIT logout state
+        setUser(null);
+      }
+
+      setAuthReady(true); // ✅ IMPORTANT
     };
 
     bootstrapElectronAuth();
   }, []);
-
-
 
   return {
     token,
@@ -137,5 +145,7 @@ export const useAuth = () => {
     login,
     logout,
     isAuthenticated: !!token,
+    authReady,
   };
+
 };

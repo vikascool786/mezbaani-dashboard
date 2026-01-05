@@ -1,15 +1,21 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 type Props = {
   children: React.ReactElement;
 };
 
-const isAuthenticated = () => Boolean(localStorage.getItem("authToken"));
-
 export default function ProtectedRoute({ children }: Props) {
-  if (!isAuthenticated()) {
+  const { isAuthenticated, authReady } = useAuth();
+
+  if (!authReady) {
+    return <div>Loading session...</div>; // or spinner
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 }
