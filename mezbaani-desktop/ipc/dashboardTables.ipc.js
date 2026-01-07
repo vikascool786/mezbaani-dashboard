@@ -13,26 +13,34 @@ function getToken() {
   if (!session?.token) throw new Error("Not authenticated");
   return session.token;
 }
+let isDashboardSyncRunning = false;
 
 ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
+  if (isDashboardSyncRunning) {
+    console.warn("⚠️ Dashboard sync already running, skipping");
+    return { skipped: true };
+  }
+
+  isDashboardSyncRunning = true;
   if (!restaurantId) throw new Error("restaurantId missing");
   const db = getDB();
   const token = getToken();
-  const res = await fetch(
-    `${appUrl}/dashboard/tables/${restaurantId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  try {
+    const res = await fetch(
+      `${appUrl}/dashboard/tables/${restaurantId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { tables } = await res.json();
+    if (!Array.isArray(tables)) {
+      throw new Error("Invalid tables API response");
     }
-  );
 
-  const { tables } = await res.json();
-  if (!Array.isArray(tables)) {
-    throw new Error("Invalid tables API response");
-  }
-
-  const stmt = db.prepare(`
+    const stmt = db.prepare(`
     INSERT INTO dashboard_tables (
       id,
       restaurantId,
@@ -70,33 +78,36 @@ ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
       updatedAt=excluded.updatedAt
   `);
 
-  const now = new Date().toISOString();
+    const now = new Date().toISOString();
 
-  const tx = db.transaction(() => {
-    for (const t of tables) {
-      stmt.run({
-        id: t.id,
-        restaurantId,
-        name: t.name,
-        section: t.section,
-        seats: t.seats,
-        status: t.status,
-        isOccupied: t.isOccupied ? 1 : 0,
-        duration: t.duration,
-        customerName: t.customerName,
-        amount: t.amount,
-        reservationTime: t.reservationTime,
-        updatedAt: now,
-      });
-    }
-  });
+    const tx = db.transaction(() => {
+      for (const t of tables) {
+        stmt.run({
+          id: t.id,
+          restaurantId,
+          name: t.name,
+          section: t.section,
+          seats: t.seats,
+          status: t.status,
+          isOccupied: t.isOccupied ? 1 : 0,
+          duration: t.duration,
+          customerName: t.customerName,
+          amount: t.amount,
+          reservationTime: t.reservationTime,
+          updatedAt: now,
+        });
+      }
+    });
 
-  tx();
+    tx();
 
-  return {
-    success: true,
-    synced: tables.length,
-  };
+    return {
+      success: true,
+      synced: tables.length,
+    };
+  } finally {
+    isDashboardSyncRunning = false;
+  }
 });
 
 ipcMain.handle("db:getDashboardTables", (_e, restaurantId) => {

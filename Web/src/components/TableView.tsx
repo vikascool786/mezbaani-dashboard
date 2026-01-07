@@ -123,8 +123,17 @@ export const TableView: React.FC = () => {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        if (isOnline === true) {
-          await syncDashboardTables(selectedRestaurantId);
+        const isElectronOnline = isOnline && window.posAPI;
+
+        // Electron + Online Sync
+        if (isElectronOnline) {
+          if (!token) {
+            throw new Error("Auth token missing");
+          }
+
+          if (isOnline) {
+            await syncDashboardTables(selectedRestaurantId);
+          }
         }
         const data = await getDashboardTables(selectedRestaurantId);
         setTables(data);
