@@ -6,12 +6,13 @@ import { useApi } from "../../hooks/useApi";
 import RightSidebar from "../../components/sidebar/RightSidebar";
 import { toast } from "react-toastify";
 import DrawerActions from "../DrawerActions";
-import { MenuItem, MenuItemCategory } from "../../types/MenuItem";
+import { MenuItem, MenuItemCategory, MenuItemResponse } from "../../types/MenuItem";
 import MenuItemEditDrawer from "../menu-Item-list-drawer/MenuItemEditDrawer";
 import MenuItemViewDrawer from "../menu-Item-list-drawer/MenuItemViewDrawer";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { getMenuCategories, syncMenuCategories } from "../../data/menuCategoryService";
 import { getMenuItems, syncMenuItems } from "../../data/menuItemService";
+import { MenuCategoryResponse } from "../../types/MenuCategory";
 
 const EMPTY_ITEM: MenuItem = {
   id: "",
@@ -47,65 +48,70 @@ const MenuItems: React.FC = () => {
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
+  const normalizeMenuItems = (data: MenuItemResponse) => {
+    return Array.isArray(data) ? data : data?.items ?? [];
+  };
+  const normalizeMenuCategories = (data: MenuCategoryResponse) => {
+    return Array.isArray(data) ? data : data?.categories ?? [];
+  };
+
+
   /* ---------------- Fetch categories and items ---------------- */
   const fetchMenuCategories = async (online?: boolean) => {
     setLoading(true);
+
     try {
-      // Electron flow
-      if (online == true && window.posAPI) {
+      const isElectronOnline = online && window.posAPI;
+
+      // Electron + Online Sync
+      if (isElectronOnline) {
         if (!token) {
           throw new Error("Auth token missing");
         }
+
         if (isOnline) {
-          // when ONLINE
           await syncMenuCategories();
         }
-        const data = await getMenuCategories(apiCall);
-        const categoriesArray = Array.isArray(data)
-          ? data
-          : data?.categories ?? [];
-
-        setCategories(categoriesArray);
-        return;
       }
 
-      // WEB Flow 
+      // Common fetch logic (WEB + Electron)
       const data = await getMenuCategories(apiCall);
-      const categoriesArray = Array.isArray(data)
-        ? data
-        : data?.categories ?? [];
+      const categories = normalizeMenuCategories(data);
+      setCategories(categories);
 
-      setCategories(categoriesArray);
     } catch (err: any) {
       toast.error("Failed to load menu categories");
-      setError(err.message || "Failed to fetch categories");
+      setError(err?.message ?? "Failed to fetch categories");
     } finally {
       setLoading(false);
     }
   };
+
   const fetchMenuItems = async (online?: boolean) => {
     setLoading(true);
+
     try {
-      // Electron flow
-      if (online == true && window.posAPI) {
+      const isElectronOnline = online && window.posAPI;
+
+      // Electron + Online Sync
+      if (isElectronOnline) {
         if (!token) {
           throw new Error("Auth token missing");
         }
+
         if (isOnline) {
-          // when ONLINE
           await syncMenuItems();
         }
-        const data = await getMenuItems(apiCall);
-        setMenuItems(data);
-        return;
       }
 
-      // WEB Flow 
+      // Common fetch logic (WEB + Electron)
       const data = await getMenuItems(apiCall);
-      setMenuItems(data);
+      const menuItems = normalizeMenuItems(data);
+      setMenuItems(menuItems);
+
     } catch (err: any) {
-      toast.error("Failed to load menu Items");
-      setError(err.message || "Failed to fetch categories");
+      toast.error("Failed to load menu items");
+      setError(err?.message ?? "Failed to fetch menu items");
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import { MenuCategoryResponse } from "./MenuCategory";
-import { MenuItem } from "./MenuItem";
+import { MenuItem, MenuItemResponse } from "./MenuItem";
 import { Order } from "./Order";
 
 export { };
@@ -25,7 +25,7 @@ declare global {
       getTables: (restaurantId: string) => Promise<any[]>;
       getOrders: () => Promise<Order[]>;
       getMenuCategories: () => Promise<MenuCategoryResponse>;
-      getMenuItems: () => Promise<MenuItem[]>;
+      getMenuItems: () => Promise<MenuItemResponse>;
 
       /* ---------- SYNC ---------- */
       syncDashboardTables: (restaurantId: string) => Promise<{ success: boolean; synced: number }>;

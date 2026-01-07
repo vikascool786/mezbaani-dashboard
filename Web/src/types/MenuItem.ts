@@ -15,6 +15,11 @@ export interface MenuItem {
   MenuCategory?: MenuCategory;
 }
 
+
+export interface MenuItemResponse {
+  items: MenuItem[];
+}
+
 export type FoodType = "veg" | "non-veg";
 
 export interface MenuCategory {

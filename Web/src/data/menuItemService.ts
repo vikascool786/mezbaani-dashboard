@@ -1,5 +1,5 @@
 import { MenuCategoryResponse } from "../types/MenuCategory";
-import { MenuItem } from "../types/MenuItem";
+import { MenuItem, MenuItemResponse } from "../types/MenuItem";
 import { RestaurantResponse } from "../types/Restaurant";
 
 const isElectron = () =>
@@ -9,7 +9,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL!;
 
 export async function getMenuItems(
   apiCall?: (url: string) => Promise<any>
-): Promise<MenuItem[]> {
+): Promise<MenuItemResponse> {
   if (isElectron()) {
     return window.posAPI.getMenuItems();
   }
