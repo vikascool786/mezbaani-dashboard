@@ -31,7 +31,6 @@ const MenuCategoryEditDrawer: React.FC<MenuCategoryEditDrawerProps> = ({
   onSubmit,
 }) => {
   const isEditMode = Boolean(category?.id);
-console.log(isEditMode);
   return (
     <Formik
       enableReinitialize

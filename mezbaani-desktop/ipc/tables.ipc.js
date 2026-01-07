@@ -38,7 +38,6 @@ ipcMain.handle("sync:tables", async () => {
 
     const json = await response.json();
     const tables = json.tables;
-    console.log(tables);
 
     if (!Array.isArray(tables)) {
       throw new Error("Invalid API response");

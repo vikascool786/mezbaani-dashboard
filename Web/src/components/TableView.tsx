@@ -38,7 +38,6 @@ export const TableView: React.FC = () => {
 
   // checking online or not
   const isOnline = useNetworkStatus();
-  console.log(isOnline);
 
   // restaurant hook 
   const { setGlobalRestaurantId } = useSelectedRestaurant();
@@ -114,7 +113,6 @@ export const TableView: React.FC = () => {
     };
 
     fetchRestaurants();
-    console.log(token)
   }, [token, isOnline]);
 
   // LOAD DASHBOARD TABLES (WHEN RESTAURANT CHANGES)

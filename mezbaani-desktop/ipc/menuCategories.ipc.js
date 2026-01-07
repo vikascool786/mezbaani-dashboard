@@ -27,7 +27,6 @@ ipcMain.handle("sync:menuCategories", async () => {
   );
 
   const { categories } = await res.json();
-  console.log("categories", categories)
   if (!Array.isArray(categories)) {
     throw new Error("Invalid MenuCategories API response");
   }
