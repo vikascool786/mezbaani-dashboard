@@ -86,9 +86,6 @@ export const TableView: React.FC = () => {
 
         // Electron flow
         if (window.posAPI) {
-          if (!token) {
-            throw new Error("Auth token missing");
-          }
           if (isOnline) {
             // when ONLINE
             await syncRoles(token);

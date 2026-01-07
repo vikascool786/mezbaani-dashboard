@@ -5,7 +5,19 @@ const { getDB } = require("../db/db");
 let isSyncingTables = false;
 let appUrl = 'https://vitsolutions24x7.com/mezbaani/api';
 
+function getToken() {
+  const session = getDB()
+    .prepare(`SELECT token FROM auth_session WHERE id = 1`)
+    .get();
+
+  if (!session?.token) throw new Error("Not authenticated");
+  return session.token;
+}
+
+
 ipcMain.handle("sync:tables", async () => {
+  const db = getDB();
+  const token = getToken();
   if (isSyncingTables) {
     return { success: false, message: "Sync already running" };
   }
@@ -13,13 +25,12 @@ ipcMain.handle("sync:tables", async () => {
   isSyncingTables = true;
 
   try {
-    const db = getDB();
 
     const response = await fetch(
       `${appUrl}/tables/bbae0cc4-bea7-4fb1-aea0-9ca598be608f`,
       {
         headers: {
-          Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZjNjYyYmE1LTYzNDktNDU0YS05NTczLTg4NWNjNGE0ZDEyNiIsInBob25lIjoiODg4ODg4ODg4MSIsInJvbGVOYW1lIjoiYWRtaW4iLCJpYXQiOjE3NjcxMDgyNzAsImV4cCI6MTc2NzcxMzA3MH0.YAO6QrzKOLy8MRfWEJI0HhIRwme5_zCw4uk00ljAHRM",
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         }
       }
@@ -27,6 +38,7 @@ ipcMain.handle("sync:tables", async () => {
 
     const json = await response.json();
     const tables = json.tables;
+    console.log(tables);
 
     if (!Array.isArray(tables)) {
       throw new Error("Invalid API response");
