@@ -32,6 +32,30 @@ import { syncDashboardTables } from "../data/dashboardTableService";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { useSelectedRestaurant } from "../context/SelectedRestaurantContext";
 
+//MOCK DATA FOR PRINT - WILL REMOVE LATER
+const dummyReceipt = {
+  restaurant: {
+    name: "Mezbaani Restaurant",
+    address: "MG Road, Bangalore",
+    phone: "8888888881"
+  },
+  order: {
+    billNo: "BILL-1021",
+    date: "2026-01-07 19:30",
+    table: "T5",
+    captain: "Rahul"
+  },
+  items: [
+    { name: "Paneer Butter Masala", qty: 2, price: 180 },
+    { name: "Butter Naan", qty: 4, price: 40 }
+  ],
+  totals: {
+    subTotal: 520,
+    gst: 26,
+    serviceCharge: 20,
+    grandTotal: 566
+  }
+};
 
 export const TableView: React.FC = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -220,6 +244,13 @@ export const TableView: React.FC = () => {
           <p>Manage live tables and status</p>
         </div>
         <div className="align-items-center d-flex gap-2">
+          <Button
+            onClick={async () => {
+              await window.posAPI.printReceipt(dummyReceipt);
+            }}
+          >
+            Print Bill
+          </Button>
           <i
             className="bi bi-arrow-repeat fs-2"
             onClick={async () => {

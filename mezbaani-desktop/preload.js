@@ -33,11 +33,14 @@ contextBridge.exposeInMainWorld("posAPI", {
   getMenuItems: () => ipcRenderer.invoke("db:getMenuItems"),
   syncMenuItems: () => ipcRenderer.invoke("sync:menuItems"),
 
-  // ✅ NEW: master sync
+  // master sync
   syncRoles: (token) => ipcRenderer.invoke("sync:roles", token),
   // syncUsers: (token) => ipcRenderer.invoke("sync:users", token),
   syncRestaurants: (token) => ipcRenderer.invoke("sync:restaurants"),
   syncTables: () => ipcRenderer.invoke("sync:tables"),
   syncDashboardTables: (restaurantId) => ipcRenderer.invoke("sync:dashboardTables", restaurantId),
   isOnline: () => ipcRenderer.invoke("network:isOnline"),
+
+  //print solutions
+  printReceipt: (data) => ipcRenderer.invoke("print:receipt", data)
 });

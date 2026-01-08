@@ -38,7 +38,10 @@ declare global {
       syncOrders: () => Promise<any>;
 
        /* ---------- SYSTEM ---------- */
-      isOnline: () => Promise<boolean>;
-    };
+       isOnline: () => Promise<boolean>;
+       
+       /* ---------- PRINT ---------- */
+       printReceipt: (data: Receipt) => Promise<boolean>;
+      };
   }
 }
