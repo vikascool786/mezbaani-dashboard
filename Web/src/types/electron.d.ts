@@ -31,6 +31,7 @@ declare global {
       syncDashboardTables: (restaurantId: string) => Promise<{ success: boolean; synced: number }>;
       syncRestaurants: () => Promise<{ success: boolean; synced: number }>;
       syncTables: () => Promise<{ success: boolean; synced: number }>;
+      syncOrderByTable: (tableId: string) => Promise<OrderItem[]>;
       syncRoles: (token: string) => Promise<any>;
       syncUsers: (token: string) => Promise<any>;
       syncMenuCategories: () => Promise<any>;

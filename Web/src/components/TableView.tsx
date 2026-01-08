@@ -31,7 +31,6 @@ import { syncRoles } from "../data/roleService";
 import { syncDashboardTables } from "../data/dashboardTableService";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { useSelectedRestaurant } from "../context/SelectedRestaurantContext";
-
 //MOCK DATA FOR PRINT - WILL REMOVE LATER
 const dummyReceipt = {
   restaurant: {
@@ -63,7 +62,7 @@ export const TableView: React.FC = () => {
   // checking online or not
   const isOnline = useNetworkStatus();
 
-  // restaurant hook 
+  // restaurant hook
   const { setGlobalRestaurantId } = useSelectedRestaurant();
 
   /**
@@ -84,7 +83,9 @@ export const TableView: React.FC = () => {
    * Restaurant State
    */
   const [restaurant, setRestaurant] = useState<RestaurantResponse>([]);
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
+    string | null
+  >(null);
 
   /**
    * Table State
@@ -123,7 +124,7 @@ export const TableView: React.FC = () => {
           return;
         }
 
-        // WEB Flow 
+        // WEB Flow
         const data = await getRestaurants(apiCall);
         setRestaurant(data);
         if (data.length > 0) {
@@ -175,7 +176,9 @@ export const TableView: React.FC = () => {
     value: r.id,
   }));
   const tablesBySection = groupTablesBySection(tables); // Group tables by section
-  const sortedSections = Object.keys(tablesBySection).sort((a, b) => a.localeCompare(b));
+  const sortedSections = Object.keys(tablesBySection).sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   // HANDLERS
   const openRightSidebar = (table: Table) => {
@@ -188,13 +191,16 @@ export const TableView: React.FC = () => {
     setIsRightSidebarOpen(false);
   };
 
-  const handleOrderUpdated = async () => { //Handle order updated from TableOrderDrawer
+  const handleOrderUpdated = async () => {
     if (!selectedRestaurantId) return;
-
-    const res = await apiCall(
-      `${baseUrl}/dashboard/tables/${selectedRestaurantId}`
-    );
-    setTables(res.tables);
+    if (window.posAPI) {
+      if (isOnline) {
+        await syncDashboardTables(selectedRestaurantId);
+      }
+      const data = await getDashboardTables(selectedRestaurantId);
+      setTables(data);
+      return;
+    }
   };
 
   const handleReservationSubmit = (values: any) => {
@@ -227,7 +233,12 @@ export const TableView: React.FC = () => {
       options: ["T1", "T2", "T3"],
       required: true,
     },
-    { name: "datetime", label: "Date & Time", type: "datetime", required: true },
+    {
+      name: "datetime",
+      label: "Date & Time",
+      type: "datetime",
+      required: true,
+    },
     { name: "notes", label: "Notes", type: "textarea" },
   ];
 
@@ -263,7 +274,12 @@ export const TableView: React.FC = () => {
             }}
           />
 
-          <Button variant="danger" onClick={() => setShowReservationModal(true)}>+ Table Reservation</Button>
+          <Button
+            variant="danger"
+            onClick={() => setShowReservationModal(true)}
+          >
+            + Table Reservation
+          </Button>
           <Button variant="danger">Delivery</Button>
           <Button variant="danger">Take Away</Button>
           <Button variant="danger">+ Contactless</Button>
@@ -274,25 +290,38 @@ export const TableView: React.FC = () => {
         {/* Legend row */}
         <div className="align-items-center d-flex flex-wrap gap-4">
           <div>
-            <Badge bg="#D3D6D7" text="dark" className="legend-box table-blank me-2 rounded-5">
+            <Badge
+              bg="#D3D6D7"
+              text="dark"
+              className="legend-box table-blank me-2 rounded-5"
+            >
               &nbsp;
             </Badge>
             Vacant
           </div>
           <div>
-            <Badge bg="#ffd6d6" className="legend-box table-running me-2 rounded-5">
+            <Badge
+              bg="#ffd6d6"
+              className="legend-box table-running me-2 rounded-5"
+            >
               &nbsp;
             </Badge>
             Occupied
           </div>
           <div>
-            <Badge bg="#cce5ff" className="legend-box table-printed me-2 rounded-5">
+            <Badge
+              bg="#cce5ff"
+              className="legend-box table-printed me-2 rounded-5"
+            >
               &nbsp;
             </Badge>
             Bill Printed
           </div>
           <div>
-            <Badge bg="#FBF7A4" className="legend-box table-paid me-2 rounded-5">
+            <Badge
+              bg="#FBF7A4"
+              className="legend-box table-paid me-2 rounded-5"
+            >
               &nbsp;
             </Badge>
             Reserved
@@ -321,7 +350,6 @@ export const TableView: React.FC = () => {
         </div>
       </div>
 
-
       {/* Sections */}
       {sortedSections.map((section) => (
         <div key={section}>
@@ -330,7 +358,15 @@ export const TableView: React.FC = () => {
             {tablesBySection[section].map((table) => (
               <CustomCard
                 key={table.id}
-                status={table.status === 'OCCUPIED' ? "OCCUPIED" : table.status === 'BILLED' ? "BILLED" : table.status === 'RESERVED' ? "RESERVED" : "VACANT"}
+                status={
+                  table.status === "OCCUPIED"
+                    ? "OCCUPIED"
+                    : table.status === "BILLED"
+                    ? "BILLED"
+                    : table.status === "RESERVED"
+                    ? "RESERVED"
+                    : "VACANT"
+                }
                 tableName={`${table.name}`}
                 seats={`${table.seats}`}
                 customerName={`${table.customerName}`}
@@ -338,7 +374,6 @@ export const TableView: React.FC = () => {
                 amount={table.amount}
                 reservationTime={table.reservationTime}
                 onClick={() => openRightSidebar(table)}
-
               />
             ))}
           </div>
@@ -369,7 +404,6 @@ export const TableView: React.FC = () => {
             onOrderUpdated={handleOrderUpdated}
           />
         )}
-
       </RightSidebar>
 
       {/* ✅ Add Items Modal */}
@@ -378,7 +412,6 @@ export const TableView: React.FC = () => {
         onClose={() => setShowAddItemsModal(false)}
         onConfirm={handleConfirmItems}
       />
-
     </div>
   );
 };

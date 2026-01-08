@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld("posAPI", {
   getOrders: () => ipcRenderer.invoke("db:getOrders"),
   getOrderByTable: (tableId) =>
     ipcRenderer.invoke("db:getOrderByTable", tableId),
+  getOrderById: (orderId) =>
+    ipcRenderer.invoke("db:getOrderById", orderId),
   createOrder: (payload) =>
     ipcRenderer.invoke("db:createOrder", payload),
   updateOrder: (orderId, payload) =>
@@ -25,9 +27,19 @@ contextBridge.exposeInMainWorld("posAPI", {
     ipcRenderer.invoke("db:sendToKot", orderId, items),
   closeBill: (orderId, payload) =>
     ipcRenderer.invoke("db:closeBill", orderId, payload),
+  // alias / explicit sync close bill
+  syncCloseBill: (orderId, payload) =>
+    ipcRenderer.invoke("db:closeBill", orderId, payload),
   syncOrderByTable: (tableId) =>
     ipcRenderer.invoke("sync:orderByTable", tableId),
   syncOrders: () => ipcRenderer.invoke("sync:orders"),
+  //order items
+  updateOrderItem: (orderId, payload) =>
+    ipcRenderer.invoke("db:updateOrderItem", orderId, payload),
+
+  // sync single order by table (alias support)
+  syncGetOrderByTable: (tableId) =>
+    ipcRenderer.invoke("sync:getOrderByTable", tableId),
   //menu categories
   getMenuCategories: () => ipcRenderer.invoke("db:getMenuCategories"),
   syncMenuCategories: () => ipcRenderer.invoke("sync:menuCategories"),
