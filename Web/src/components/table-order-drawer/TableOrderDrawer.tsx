@@ -11,6 +11,8 @@ import { MenuItem } from "../../types/MenuItem";
 import OrderItemsSkeleton from "../../UI/skeleton/OrderItemsSkeleton";
 import MenuPanel from "../Table/MenuPanel";
 import PaymentPanel from "../Table/PaymentPanel";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { syncMenuItems } from "../../data/menuItemService";
 
 interface Props {
   table: any | null;
@@ -28,6 +30,7 @@ const TableOrderDrawer: React.FC<Props> = ({
   const { apiCall } = useApi();
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const isElectron = !!(window as any).posAPI;
+  const isOnline = useNetworkStatus();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
@@ -67,13 +70,24 @@ const TableOrderDrawer: React.FC<Props> = ({
 
   // READ helpers
   const getOrderByTable = async (tableId: string) => {
+    // Electron: sync first, then read from SQLite
     if (isElectron) {
+      if (isOnline) {
+        await (window as any).posAPI.syncOrderByTable(tableId);
+      }
       return (window as any).posAPI.getOrderByTable(tableId);
     }
+
+    // Web: direct backend call
     return apiCall(`${baseUrl}/orders/table/${tableId}`);
   };
 
   const getMenuItems = async () => {
+    // Electron + Online Sync
+
+    if (isOnline) {
+      await syncMenuItems();
+    }
     if (isElectron) {
       return (window as any).posAPI.getMenuItems();
     }
@@ -254,10 +268,11 @@ const TableOrderDrawer: React.FC<Props> = ({
 
       // CASE 2: OCCUPIED TABLE
       else {
-        await syncUpdateOrder(orderId, {
+        const updatedTable = await syncUpdateOrder(orderId, {
           tableId: table.id,
           items: itemsPayload,
         });
+        setOrder(updatedTable);
       }
 
       // 🔥 SEND TO KOT (COMMON)
@@ -274,7 +289,14 @@ const TableOrderDrawer: React.FC<Props> = ({
       setDraftItems([]);
 
       // 🔁 REFRESH ORDER (optional but recommended)
-      const updatedOrder = await apiCall(`${baseUrl}/orders/${orderId}`);
+      let updatedOrder;
+
+      if (isElectron) {
+        updatedOrder = await getOrderByTable(table.id);
+      } else {
+        updatedOrder = await apiCall(`${baseUrl}/orders/${orderId}`);
+      }
+
       setOrder(updatedOrder);
       setExistingItems(updatedOrder?.items || []);
       // Notify parent about order update for tableView.tsx file
