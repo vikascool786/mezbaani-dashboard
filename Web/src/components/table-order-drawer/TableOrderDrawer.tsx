@@ -72,10 +72,7 @@ const TableOrderDrawer: React.FC<Props> = ({
   const getOrderByTable = async (tableId: string) => {
     // Electron: sync first, then read from SQLite
     if (isElectron) {
-      if (isOnline) {
-        await (window as any).posAPI.syncOrderByTable(tableId);
-      }
-      return (window as any).posAPI.getOrderByTable(tableId);
+      return (window as any).posAPI.syncGetOrderByTable(tableId);
     }
 
     // Web: direct backend call
@@ -285,14 +282,13 @@ const TableOrderDrawer: React.FC<Props> = ({
         });
       }
 
-      // ✅ RESET DRAFT AFTER SUCCESS
       setDraftItems([]);
 
-      // 🔁 REFRESH ORDER (optional but recommended)
       let updatedOrder;
 
       if (isElectron) {
-        updatedOrder = await getOrderByTable(table.id);
+        // React parity: always fetch by orderId after KOT
+        updatedOrder = await (window as any).posAPI.getOrderById(orderId);
       } else {
         updatedOrder = await apiCall(`${baseUrl}/orders/${orderId}`);
       }
@@ -313,10 +309,14 @@ const TableOrderDrawer: React.FC<Props> = ({
     if (!order) return;
 
     if (isElectron) {
-      await (window as any).posAPI.closeBill(order.id, {
+      await (window as any).posAPI.syncCloseBill(order.id, {
         paymentMode: selectedMethod,
         amount: Number(order.total),
       });
+
+      // refresh table/order state after close
+      onOrderUpdated?.(table.id);
+      onClose();
       return;
     }
 
@@ -337,11 +337,11 @@ const TableOrderDrawer: React.FC<Props> = ({
       // print logic goes here
       const printData = await apiCall(`${baseUrl}/orders/${order.id}/bill`);
 
-      // // 🔁 Refresh table/order state in parent
-      // onOrderUpdated?.(table.id);
+      // 🔁 Refresh table/order state in parent
+      onOrderUpdated?.(table.id);
 
-      // // 🔒 Close drawer
-      // onClose();
+      // 🔒 Close drawer
+      onClose();
     } catch (err) {
       console.error("Payment failed", err);
       alert("Payment failed. Please try again.");
@@ -397,22 +397,39 @@ const TableOrderDrawer: React.FC<Props> = ({
     action: "served" | "cancelled",
     qty = 1
   ) => {
-    if (!orderId && !itemId) return;
+    if (!orderId || !itemId) return;
+
     try {
+      setLoading(true);
+
+      // Electron: update locally via IPC
+      if (isElectron) {
+        await (window as any).posAPI.updateOrderItem(orderId, {
+          menuItemId: itemId,
+          action,
+          quantity: qty,
+        });
+
+        // refresh from SQLite
+        const data: Order = await (window as any).posAPI.getOrderById(orderId);;
+        setOrder(data);
+        setExistingItems(data?.items || []);
+        return;
+      }
+
+      // Web: backend API
       const payload = {
         [action === "served" ? "quantityServed" : "quantityCancelled"]: qty,
       };
 
-      setLoading(true);
       await apiCall(`${baseUrl}/order-items/status/${orderId}/${itemId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
 
-      //refresh order
       await refreshOrder();
     } catch (err) {
-      console.error("Failed to fetch order", err);
+      console.error("Failed to update order item", err);
     } finally {
       setLoading(false);
     }

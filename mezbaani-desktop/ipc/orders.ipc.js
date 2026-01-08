@@ -138,14 +138,27 @@ ipcMain.handle("sync:orderByTable", async (event, tableId) => {
     },
   });
 
+  // ✅ No open order is NOT an error
+  if (res.status === 404) {
+    return null;
+  }
+
   if (!res.ok) {
     throw new Error(`Failed to fetch order for table ${tableId}`);
   }
 
   const order = await res.json();
+
+  // Backend may explicitly return null
   if (!order) return null;
 
   const discount = normalizeDiscount(order);
+
+  // Normalize status: ensure always uppercase string, default to "OPEN"
+  const normalizedStatus =
+    order.status && typeof order.status === "string"
+      ? order.status.toUpperCase()
+      : "OPEN";
 
   const insertOrder = db.prepare(`
     INSERT INTO orders (
@@ -225,10 +238,17 @@ ipcMain.handle("sync:orderByTable", async (event, tableId) => {
     )
   `);
 
+  // Prepared statement to check existence of menu item
+  const menuExists = db.prepare(`
+    SELECT 1 FROM MenuItems WHERE id = ?
+  `);
+
+  db.pragma("foreign_keys = OFF");
+
   const tx = db.transaction(() => {
     insertOrder.run({
       id: order.id,
-      status: order.status,
+      status: normalizedStatus,
       orderNumber: order.orderNumber,
       subtotal: Number(order.subtotal || 0),
       taxAmount: Number(order.taxAmount || 0),
@@ -249,6 +269,16 @@ ipcMain.handle("sync:orderByTable", async (event, tableId) => {
     deleteItems.run(order.id);
 
     for (const item of order.items || []) {
+      const exists = menuExists.get(item.menuItemId);
+
+      if (!exists) {
+        console.warn(
+          "[ORDERS-IPC] skipping OrderItem due to missing MenuItem",
+          { menuItemId: item.menuItemId, orderId: order.id }
+        );
+        continue;
+      }
+
       insertItem.run({
         orderId: order.id,
         menuItemId: item.menuItemId,
@@ -265,7 +295,63 @@ ipcMain.handle("sync:orderByTable", async (event, tableId) => {
 
   tx();
 
-  return { success: true, orderId: order.id };
+  db.pragma("foreign_keys = ON");
+
+  // After sync, return the hydrated order from SQLite
+  const syncedOrder = db
+    .prepare(
+      `
+    SELECT
+      id,
+      status,
+      orderNumber,
+      subtotal,
+      taxAmount,
+      total,
+      discountType,
+      discountValue,
+      serviceCharge,
+      gstPercent,
+      openedAt,
+      closedAt,
+      createdAt,
+      updatedAt,
+      restaurantId,
+      tableId,
+      userId
+    FROM orders
+    WHERE tableId = ?
+      AND status = 'OPEN'
+    ORDER BY openedAt DESC
+    LIMIT 1
+  `
+    )
+    .get(tableId);
+
+  if (!syncedOrder) return null;
+
+  const items = db
+    .prepare(
+      `
+    SELECT
+      oi.menuItemId,
+      mi.name,
+      mi.price,
+      oi.quantity,
+      oi.quantityServed,
+      oi.quantityCancelled
+    FROM OrderItems oi
+    JOIN MenuItems mi
+      ON mi.id = oi.menuItemId
+    WHERE oi.orderId = ?
+  `
+    )
+    .all(syncedOrder.id);
+
+  return {
+    ...syncedOrder,
+    items,
+  };
 });
 
 ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
@@ -280,14 +366,31 @@ ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
     },
   });
 
+
+  // ✅ No open order is NOT an error
+  if (res.status === 404) {
+    return null;
+  }
+
   if (!res.ok) {
     throw new Error(`Failed to fetch order for table ${tableId}`);
   }
 
   const order = await res.json();
+
+  console.log("Fetched order for table:", tableId, order);
+
+
+  // Backend may explicitly return null
   if (!order) return null;
 
   const discount = normalizeDiscount(order);
+
+  // Normalize status: ensure always uppercase string, default to "OPEN"
+  const normalizedStatus =
+    order.status && typeof order.status === "string"
+      ? order.status.toUpperCase()
+      : "OPEN";
 
   const insertOrder = db.prepare(`
     INSERT INTO orders (
@@ -367,10 +470,17 @@ ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
     )
   `);
 
+  // Prepared statement to check existence of menu item
+  const menuExists = db.prepare(`
+    SELECT 1 FROM MenuItems WHERE id = ?
+  `);
+
+  db.pragma("foreign_keys = OFF");
+
   const tx = db.transaction(() => {
     insertOrder.run({
       id: order.id,
-      status: order.status,
+      status: normalizedStatus,
       orderNumber: order.orderNumber,
       subtotal: Number(order.subtotal || 0),
       taxAmount: Number(order.taxAmount || 0),
@@ -391,6 +501,16 @@ ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
     deleteItems.run(order.id);
 
     for (const item of order.items || []) {
+      const exists = menuExists.get(item.menuItemId);
+
+      if (!exists) {
+        console.warn(
+          "[ORDERS-IPC] skipping OrderItem due to missing MenuItem",
+          { menuItemId: item.menuItemId, orderId: order.id }
+        );
+        continue;
+      }
+
       insertItem.run({
         orderId: order.id,
         menuItemId: item.menuItemId,
@@ -407,7 +527,63 @@ ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
 
   tx();
 
-  return { success: true, orderId: order.id };
+  db.pragma("foreign_keys = ON");
+
+  // After sync, return the hydrated order from SQLite
+  const syncedOrder = db
+    .prepare(
+      `
+    SELECT
+      id,
+      status,
+      orderNumber,
+      subtotal,
+      taxAmount,
+      total,
+      discountType,
+      discountValue,
+      serviceCharge,
+      gstPercent,
+      openedAt,
+      closedAt,
+      createdAt,
+      updatedAt,
+      restaurantId,
+      tableId,
+      userId
+    FROM orders
+    WHERE tableId = ?
+      AND status = 'OPEN'
+    ORDER BY openedAt DESC
+    LIMIT 1
+  `
+    )
+    .get(tableId);
+
+  if (!syncedOrder) return null;
+
+  const items = db
+    .prepare(
+      `
+    SELECT
+      oi.menuItemId,
+      mi.name,
+      mi.price,
+      oi.quantity,
+      oi.quantityServed,
+      oi.quantityCancelled
+    FROM OrderItems oi
+    JOIN MenuItems mi
+      ON mi.id = oi.menuItemId
+    WHERE oi.orderId = ?
+  `
+    )
+    .all(syncedOrder.id);
+
+  return {
+    ...syncedOrder,
+    items,
+  };
 });
 
 ipcMain.handle("db:createOrder", (event, payload) => {
@@ -515,10 +691,55 @@ ipcMain.handle("db:createOrder", (event, payload) => {
 
   tx();
 
+  // Return hydrated order (same shape as db:getOrderByTable)
+  const order = db
+    .prepare(
+      `
+      SELECT
+        id,
+        status,
+        orderNumber,
+        subtotal,
+        taxAmount,
+        total,
+        discountType,
+        discountValue,
+        serviceCharge,
+        gstPercent,
+        openedAt,
+        closedAt,
+        createdAt,
+        updatedAt,
+        restaurantId,
+        tableId,
+        userId
+      FROM orders
+      WHERE id = ?
+    `
+    )
+    .get(orderId);
+
+  const items = db
+    .prepare(
+      `
+      SELECT
+        oi.menuItemId,
+        mi.name,
+        mi.price,
+        oi.quantity,
+        oi.quantityServed,
+        oi.quantityCancelled
+      FROM OrderItems oi
+      JOIN MenuItems mi
+        ON mi.id = oi.menuItemId
+      WHERE oi.orderId = ?
+    `
+    )
+    .all(orderId);
+
   return {
-    id: orderId,
-    status: "OPEN",
-    tableId: payload.tableId,
+    ...order,
+    items,
   };
 });
 
@@ -575,7 +796,7 @@ ipcMain.handle("db:getOrderByTable", (event, tableId) => {
       userId
     FROM orders
     WHERE tableId = ?
-      AND status = 'OPEN'
+      AND (status = 'OPEN' OR status IS NULL)
     ORDER BY openedAt DESC
     LIMIT 1
   `
@@ -695,11 +916,12 @@ ipcMain.handle("db:updateOrder", (event, orderId, payload) => {
         payload.subtotal !== undefined ? Number(payload.subtotal) : null,
       taxAmount:
         payload.taxAmount !== undefined ? Number(payload.taxAmount) : null,
-      total:
-        payload.total !== undefined ? Number(payload.total) : null,
+      total: payload.total !== undefined ? Number(payload.total) : null,
       discountType: payload.discountType ?? null,
       discountValue:
-        payload.discountValue !== undefined ? Number(payload.discountValue) : null,
+        payload.discountValue !== undefined
+          ? Number(payload.discountValue)
+          : null,
       serviceCharge:
         payload.serviceCharge !== undefined
           ? Number(payload.serviceCharge)
@@ -723,9 +945,303 @@ ipcMain.handle("db:updateOrder", (event, orderId, payload) => {
 
   tx();
 
+  // Return hydrated order (same shape as db:getOrderByTable)
+  const order = db
+    .prepare(
+      `
+      SELECT
+        id,
+        status,
+        orderNumber,
+        subtotal,
+        taxAmount,
+        total,
+        discountType,
+        discountValue,
+        serviceCharge,
+        gstPercent,
+        openedAt,
+        closedAt,
+        createdAt,
+        updatedAt,
+        restaurantId,
+        tableId,
+        userId
+      FROM orders
+      WHERE id = ?
+    `
+    )
+    .get(orderId);
+
+  if (!order) {
+    throw new Error("Order not found after update");
+  }
+
+  const items = db
+    .prepare(
+      `
+      SELECT
+        oi.menuItemId,
+        mi.name,
+        mi.price,
+        oi.quantity,
+        oi.quantityServed,
+        oi.quantityCancelled
+      FROM OrderItems oi
+      JOIN MenuItems mi
+        ON mi.id = oi.menuItemId
+      WHERE oi.orderId = ?
+    `
+    )
+    .all(orderId);
+
+  return {
+    ...order,
+    items,
+  };
+});
+
+// Handler to update OrderItems for served/cancelled actions
+ipcMain.handle("db:updateOrderItem", async (event, orderId, payload) => {
+  if (!orderId) {
+    throw new Error("orderId is required");
+  }
+
+  const { menuItemId, action, quantity = 1 } = payload || {};
+
+  if (!menuItemId) {
+    throw new Error("menuItemId is required");
+  }
+
+  if (!["served", "cancelled"].includes(action)) {
+    throw new Error("Invalid order item action");
+  }
+
+  const db = getDB();
+  const now = new Date().toISOString();
+
+  const selectItem = db.prepare(`
+    SELECT
+      quantity,
+      quantityServed,
+      quantityCancelled
+    FROM OrderItems
+    WHERE orderId = ? AND menuItemId = ?
+  `);
+
+  const updateItem = db.prepare(`
+    UPDATE OrderItems
+    SET
+      quantityServed = @quantityServed,
+      quantityCancelled = @quantityCancelled,
+      updatedAt = @updatedAt
+    WHERE orderId = @orderId AND menuItemId = @menuItemId
+  `);
+
+  const tx = db.transaction(() => {
+    const existing = selectItem.get(orderId, menuItemId);
+
+    if (!existing) {
+      throw new Error("Order item not found");
+    }
+
+    let { quantityServed, quantityCancelled } = existing;
+
+    if (action === "served") {
+      quantityServed = Math.min(existing.quantity, quantityServed + quantity);
+    }
+
+    if (action === "cancelled") {
+      quantityCancelled = Math.min(
+        existing.quantity,
+        quantityCancelled + quantity
+      );
+    }
+
+    updateItem.run({
+      orderId,
+      menuItemId,
+      quantityServed,
+      quantityCancelled,
+      updatedAt: now,
+    });
+  });
+
+  tx();
+
+  // 🔁 Best-effort backend sync (do NOT fail local flow)
+  try {
+    const token = getToken();
+
+    const payloadBody =
+      action === "served"
+        ? { quantityServed: quantity }
+        : { quantityCancelled: quantity };
+
+    await fetch(`${appUrl}/order-items/status/${orderId}/${menuItemId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payloadBody),
+    });
+  } catch (err) {
+    // Intentionally swallow error – SQLite is source of truth
+    console.warn(
+      "[ORDERS-IPC] backend sync failed for order item",
+      { orderId, menuItemId, action, quantity },
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     orderId,
+    menuItemId,
+    action,
+    quantity,
+  };
+});
+
+// Handler to close a bill/order and sync to backend (best effort)
+ipcMain.handle("db:closeBill", async (event, orderId, payload = {}) => {
+  if (!orderId) {
+    throw new Error("orderId is required to close bill");
+  }
+
+  const db = getDB();
+  const now = new Date().toISOString();
+
+  const stmt = db.prepare(`
+    UPDATE orders
+    SET
+      status = 'CLOSED',
+      closedAt = @closedAt,
+      updatedAt = @updatedAt
+    WHERE id = @id
+  `);
+
+  const result = stmt.run({
+    id: orderId,
+    closedAt: payload.closedAt || now,
     updatedAt: now,
+  });
+
+  if (result.changes === 0) {
+    throw new Error("Order not found");
+  }
+
+  // 🔁 Best-effort backend sync
+  try {
+    const token = getToken();
+
+    /**
+     * Mirror Web close-bill flow:
+     * 1. Generate bill
+     * 2. Take payment
+     * 3. Fetch bill (for receipt / audit)
+     */
+    await fetch(`${appUrl}/bill/${orderId}/generate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    await fetch(`${appUrl}/payment/${orderId}/pay`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        paymentMode: payload.paymentMode,
+        amount: payload.amount,
+      }),
+    });
+
+    // Fetch bill (non-blocking, but useful for logs / future printing)
+    await fetch(`${appUrl}/orders/${orderId}/bill`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    console.warn(
+      "[ORDERS-IPC] backend sync failed for closeBill",
+      { orderId },
+      err?.message || err
+    );
+  }
+
+  return {
+    success: true,
+    orderId,
+    status: "CLOSED",
+    closedAt: payload.closedAt || now,
+  };
+});
+
+// Handler to fetch a fully hydrated order by orderId (mirrors React, post-KOT safe)
+ipcMain.handle("db:getOrderById", (event, orderId) => {
+  if (!orderId) {
+    throw new Error("orderId is required");
+  }
+
+  const db = getDB();
+
+  const order = db
+    .prepare(
+      `
+      SELECT
+        id,
+        status,
+        orderNumber,
+        subtotal,
+        taxAmount,
+        total,
+        discountType,
+        discountValue,
+        serviceCharge,
+        gstPercent,
+        openedAt,
+        closedAt,
+        createdAt,
+        updatedAt,
+        restaurantId,
+        tableId,
+        userId
+      FROM orders
+      WHERE id = ?
+      LIMIT 1
+    `
+    )
+    .get(orderId);
+
+  if (!order) return null;
+
+  const items = db
+    .prepare(
+      `
+      SELECT
+        oi.menuItemId,
+        mi.name,
+        mi.price,
+        oi.quantity,
+        oi.quantityServed,
+        oi.quantityCancelled
+      FROM OrderItems oi
+      JOIN MenuItems mi
+        ON mi.id = oi.menuItemId
+      WHERE oi.orderId = ?
+    `
+    )
+    .all(orderId);
+
+  return {
+    ...order,
+    items,
   };
 });
