@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld("posAPI", {
     ipcRenderer.invoke("db:sendToKot", orderId, items),
   closeBill: (orderId, payload) =>
     ipcRenderer.invoke("db:closeBill", orderId, payload),
+  syncOrderByTable: (tableId) =>
+    ipcRenderer.invoke("sync:orderByTable", tableId),
   syncOrders: () => ipcRenderer.invoke("sync:orders"),
   //menu categories
   getMenuCategories: () => ipcRenderer.invoke("db:getMenuCategories"),
