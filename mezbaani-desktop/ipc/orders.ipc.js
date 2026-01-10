@@ -586,7 +586,7 @@ ipcMain.handle("sync:getOrderByTable", async (event, tableId) => {
   };
 });
 
-ipcMain.handle("db:createOrder", (event, payload) => {
+ipcMain.handle("db:createOrder", async (event, payload) => {
   const db = getDB();
   const now = new Date().toISOString();
   const orderId = payload.id || require("crypto").randomUUID();
@@ -690,6 +690,33 @@ ipcMain.handle("db:createOrder", (event, payload) => {
   });
 
   tx();
+
+    // 🔁 Best-effort backend sync (mirror React create order)
+  try {
+    const token = getToken();
+
+    await fetch(`${appUrl}/orders`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: orderId,
+        tableId: payload.tableId,
+        restaurantId: payload.restaurantId,
+        userId: payload.userId,
+        items: payload.items || [],
+      }),
+    });
+  } catch (err) {
+    // Do NOT fail local flow – SQLite is source of truth
+    console.warn(
+      "[ORDERS-IPC] backend sync failed for createOrder",
+      { orderId },
+      err?.message || err
+    );
+  }
 
   // Return hydrated order (same shape as db:getOrderByTable)
   const order = db
