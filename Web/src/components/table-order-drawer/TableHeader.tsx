@@ -87,7 +87,7 @@ const TableHeader: React.FC<Props> = ({ table, order, onClose, showCloseBill }) 
             <i className="bi bi-people me-1" />
             Family
           </div>
-          <Badge className={`table-header-drawer-status-pill ${status.className}`}>
+          <Badge className={`table-header-drawer-status-pill ${status?.className}`}>
             <span className="dot" />
             {status.label}
           </Badge>

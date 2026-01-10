@@ -1,6 +1,7 @@
 const { ipcMain } = require("electron");
 const fetch = require("node-fetch");
 const { getDB } = require("../db/db");
+const { queueWrite } = require("../db/writeQueue");
 
 const appUrl = "https://vitsolutions24x7.com/mezbaani/api";
 
@@ -13,33 +14,28 @@ function getToken() {
   if (!session?.token) throw new Error("Not authenticated");
   return session.token;
 }
-let isDashboardSyncRunning = false;
 
 ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
-  if (isDashboardSyncRunning) {
-    console.warn("⚠️ Dashboard sync already running, skipping");
-    return { skipped: true };
+  if (!restaurantId) throw new Error("restaurantId missing");
+
+  // 1️⃣ FETCH (NO SQLITE HERE)
+  const token = getToken(); // token must be in memory
+  const res = await fetch(
+    `${appUrl}/dashboard/tables/${restaurantId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  const { tables } = await res.json();
+
+  if (!Array.isArray(tables)) {
+    throw new Error("Invalid dashboard tables response");
   }
 
-  isDashboardSyncRunning = true;
-  if (!restaurantId) throw new Error("restaurantId missing");
-  const db = getDB();
-  const token = getToken();
-  try {
-    const res = await fetch(
-      `${appUrl}/dashboard/tables/${restaurantId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const { tables } = await res.json();
-    if (!Array.isArray(tables)) {
-      throw new Error("Invalid tables API response");
-    }
-
+  // 2️⃣ WRITE (SQLITE ONLY, SYNC)
+  return queueWrite(() => {
+    const db = getDB();
     const stmt = db.prepare(`
     INSERT INTO dashboard_tables (
       id,
@@ -90,34 +86,38 @@ ipcMain.handle("sync:dashboardTables", async (_event, restaurantId) => {
           seats: t.seats,
           status: t.status,
           isOccupied: t.isOccupied ? 1 : 0,
-          duration: t.duration,
-          customerName: t.customerName,
-          amount: t.amount,
-          reservationTime: t.reservationTime,
+          duration: t.duration ?? null,
+          customerName: t.customerName ?? null,
+          amount: t.amount ?? 0,
+          reservationTime: t.reservationTime ?? null,
           updatedAt: now,
         });
       }
     });
 
-    tx();
+    try {
+      tx();
+    } catch (err) {
+      throw new Error("Failed to sync dashboard tables: " + err.message);
+    }
 
     return {
       success: true,
       synced: tables.length,
     };
-  } finally {
-    isDashboardSyncRunning = false;
-  }
+  });
 });
 
 ipcMain.handle("db:getDashboardTables", (_e, restaurantId) => {
-  const db = getDB();
-  return db
-    .prepare(`
+  return queueWrite(() => {
+    const db = getDB();
+    return db
+      .prepare(`
       SELECT *
       FROM dashboard_tables
       WHERE restaurantId = ?
       ORDER BY section, name
     `)
-    .all(restaurantId);
+      .all(restaurantId);
+  });
 });

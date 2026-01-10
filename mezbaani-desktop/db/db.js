@@ -21,6 +21,7 @@ function initDatabase() {
 
   db.pragma("journal_mode = WAL");
   db.pragma("synchronous = NORMAL");
+  db.pragma("busy_timeout = 5000");
   // Enable foreign keys
   // db.pragma("foreign_keys = OFF");
   db.pragma("foreign_keys = ON");

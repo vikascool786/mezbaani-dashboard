@@ -108,6 +108,7 @@ ipcMain.handle("sync:orders", async () => {
         serviceCharge: Number(o.serviceCharge || 0),
         gstPercent: Number(o.gstPercent || 0),
         openedAt: o.openedAt,
+        discountType: discount.discountType,
         createdAt: o.createdAt,
         updatedAt: o.updatedAt,
         restaurantId: o.restaurantId,

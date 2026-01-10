@@ -144,6 +144,7 @@ export const TableView: React.FC = () => {
   useEffect(() => {
     if (!selectedRestaurantId) return;
     setGlobalRestaurantId(selectedRestaurantId);
+    console.log(selectedRestaurantId)
 
     const loadDashboard = async () => {
       setLoading(true);
@@ -161,7 +162,10 @@ export const TableView: React.FC = () => {
           }
         }
         const data = await getDashboardTables(selectedRestaurantId);
-        setTables(data);
+        if(data.length > 0 ){
+          console.log(data);
+          setTables(data);
+        }
       } finally {
         setLoading(false);
       }
