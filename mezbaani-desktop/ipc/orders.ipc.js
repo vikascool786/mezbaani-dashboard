@@ -1,6 +1,7 @@
 const { ipcMain } = require("electron");
 const fetch = require("node-fetch");
 const { getDB } = require("../db/db");
+const { queueWrite } = require("../db/writeQueue");
 
 const appUrl = "https://vitsolutions24x7.com/mezbaani/api";
 
@@ -28,7 +29,6 @@ function normalizeDiscount(order) {
 }
 
 ipcMain.handle("sync:orders", async () => {
-  const db = getDB();
   const token = getToken();
 
   const res = await fetch(`${appUrl}/orders`, {
@@ -44,8 +44,9 @@ ipcMain.handle("sync:orders", async () => {
   if (!Array.isArray(orders)) {
     throw new Error("Invalid orders API response");
   }
-
-  const stmt = db.prepare(`
+  return queueWrite(() => {
+    const db = getDB();
+    const stmt = db.prepare(`
     INSERT INTO orders (
       id,
       status,
@@ -96,34 +97,35 @@ ipcMain.handle("sync:orders", async () => {
       userId=excluded.userId
   `);
 
-  const tx = db.transaction(() => {
-    for (const o of orders) {
-      stmt.run({
-        id: o.id,
-        status: o.status,
-        orderNumber: o.orderNumber,
-        subtotal: Number(o.subtotal || 0),
-        taxAmount: Number(o.taxAmount || 0),
-        total: Number(o.total || 0),
-        serviceCharge: Number(o.serviceCharge || 0),
-        gstPercent: Number(o.gstPercent || 0),
-        openedAt: o.openedAt,
-        discountType: discount.discountType,
-        createdAt: o.createdAt,
-        updatedAt: o.updatedAt,
-        restaurantId: o.restaurantId,
-        tableId: o.tableId,
-        userId: o.userId,
-      });
-    }
+    const tx = db.transaction(() => {
+      for (const o of orders) {
+        stmt.run({
+          id: o.id,
+          status: o.status,
+          orderNumber: o.orderNumber,
+          subtotal: Number(o.subtotal || 0),
+          taxAmount: Number(o.taxAmount || 0),
+          total: Number(o.total || 0),
+          serviceCharge: Number(o.serviceCharge || 0),
+          gstPercent: Number(o.gstPercent || 0),
+          openedAt: o.openedAt,
+          discountType: discount.discountType,
+          createdAt: o.createdAt,
+          updatedAt: o.updatedAt,
+          restaurantId: o.restaurantId,
+          tableId: o.tableId,
+          userId: o.userId,
+        });
+      }
+    });
+
+    tx();
+
+    return {
+      success: true,
+      synced: orders.length,
+    };
   });
-
-  tx();
-
-  return {
-    success: true,
-    synced: orders.length,
-  };
 });
 
 // Sync a single order by tableId from backend, upsert into orders, replace OrderItems
@@ -692,7 +694,7 @@ ipcMain.handle("db:createOrder", async (event, payload) => {
 
   tx();
 
-    // 🔁 Best-effort backend sync (mirror React create order)
+  // 🔁 Best-effort backend sync (mirror React create order)
   try {
     const token = getToken();
 

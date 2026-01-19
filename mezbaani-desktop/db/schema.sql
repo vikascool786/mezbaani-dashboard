@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS dashboard_tables (
   amount REAL,
 
   reservationTime TEXT,          -- ISO string
+
+  -- ✅ NEW COLUMNS (POS RUNTIME STATE)
+  source TEXT DEFAULT 'LOCAL',   -- LOCAL | SERVER
+  lastComputedAt TEXT,           -- ISO timestamp
+
   updatedAt TEXT,
 
   FOREIGN KEY (restaurantId) REFERENCES Restaurants(id) ON DELETE CASCADE

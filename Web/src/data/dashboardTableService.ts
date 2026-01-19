@@ -12,7 +12,7 @@ export const syncDashboardTables = async (
     return;
   }
 
-  return window.posAPI.syncDashboardTables(restaurantId);
+  return window.posAPI.bootstrapDashboardTables(restaurantId);
 };
 
 export const getDashboardTables = async (restaurantId: string) => {

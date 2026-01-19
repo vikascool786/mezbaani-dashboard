@@ -22,6 +22,8 @@ declare global {
       getRoles: () => Promise<any[]>;
       getRestaurants: () => Promise<any[]>;
       getDashboardTables: (restaurantId: string) => Promise<any[]>;
+      bootstrapDashboardTables: (restaurantId: string) => Promise<any[]>;
+      recompute: (restaurantId: string) => Promise<any[]>;
       getTables: (restaurantId: string) => Promise<any[]>;
       getOrders: () => Promise<Order[]>;
       getMenuCategories: () => Promise<MenuCategoryResponse>;

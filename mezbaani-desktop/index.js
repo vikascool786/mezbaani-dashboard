@@ -30,22 +30,25 @@ function createWindow() {
 /* ----------------------------------
    APP BOOTSTRAP
 ----------------------------------- */
+let dbInitialized = false;
+app.setName("mezbaani-desktop");
+app.setAppUserModelId("com.vitsolutions.mezbaani");
 app.whenReady().then(() => {
   try {
-    console.log("🚀 App ready");
-    console.log("📂 userData:", app.getPath("userData"));
 
-    // ✅ Initialize SQLite FIRST
-    initDatabase();
+    // Initialize SQLite FIRST
+    if (!dbInitialized) {
+      initDatabase();
+      console.log("Database initialized");
+      dbInitialized = true;
+    }
 
-    console.log("✅ Database initialized");
-
-    // ✅ Then open UI
+    // Then open UI
     registerIpcHandlers();
     registerNetworkIPC(ipcMain);
     createWindow();
   } catch (err) {
-    console.error("❌ Failed to start app:", err);
+    console.error("Failed to start app:", err);
   }
 });
 

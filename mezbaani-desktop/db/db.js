@@ -15,6 +15,7 @@ function initDatabase() {
   }
 
   // Open or create DB
+  console.log(dbPath);
   db = new Database(dbPath, {
     timeout: 5000
   });
