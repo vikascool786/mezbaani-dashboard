@@ -34,6 +34,7 @@ function initDatabase() {
 
   // Execute schema (safe to run multiple times)
   db.transaction(() => {
+    console.log("Applying DB schema...");
     db.exec(schema);
   })();
 

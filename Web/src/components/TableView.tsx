@@ -137,7 +137,9 @@ export const TableView: React.FC = () => {
       }
     };
 
-    fetchRestaurants();
+    if(isOnline && token){
+      fetchRestaurants();
+    }
   }, [token, isOnline]);
 
   // LOAD DASHBOARD TABLES (WHEN RESTAURANT CHANGES)
