@@ -80,23 +80,33 @@ ipcMain.handle("sync:menuItems", async () => {
 
   const tx = db.transaction(() => {
     for (const t of items) {
+      // Skip items whose category is not yet synced
       if (t.categoryId) {
-        stmt.run({
-          id: t.id,
-          name: t.name,
-          description: t.description,
-          price: t.price,
-          imageUrl: t.imageUrl,
-          foodType: t.foodType,
-          isAvailable: t.isAvailable ? 1 : 0,
-          isActive: t.isActive ? 1 : 0,
-          sortOrder: t.sortOrder,
-          restaurantId: t.restaurantId,
-          categoryId: t.categoryId,
-          createdAt: t.createdAt,
-          updatedAt: now,
-        });
+        const exists = categoryExists.get(t.categoryId);
+        if (!exists) {
+          console.warn(
+            "[MENU-IPC] skipping MenuItem due to missing MenuCategory",
+            { menuItemId: t.id, categoryId: t.categoryId }
+          );
+          continue;
+        }
       }
+
+      stmt.run({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        price: t.price,
+        imageUrl: t.imageUrl,
+        foodType: t.foodType,
+        isAvailable: t.isAvailable ? 1 : 0,
+        isActive: t.isActive ? 1 : 0,
+        sortOrder: t.sortOrder,
+        restaurantId: t.restaurantId,
+        categoryId: t.categoryId,
+        createdAt: t.createdAt,
+        updatedAt: now,
+      });
     }
   });
 
