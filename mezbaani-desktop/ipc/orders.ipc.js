@@ -72,7 +72,7 @@ async function syncOrderByTableLogic(tableId) {
   const token = getToken();
 
   // 1. Fetch from Server
-  const res = await fetch(`${appUrl}/orders/table/${tableId}`, {
+  const res = await fetch(`${appUrl}/orders/${tableId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
